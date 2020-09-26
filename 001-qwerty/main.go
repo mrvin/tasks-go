@@ -87,7 +87,7 @@ func main() {
 		}
 	}
 	if input.Err() != nil {
-		log.Fatalf("Error (input.Err) %s\n", input.Err())
+		log.Fatalf("Error (input.Err) %v\n", input.Err())
 	}
 
 	executionTime := time.Since(start)
