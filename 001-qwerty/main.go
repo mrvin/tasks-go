@@ -65,6 +65,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error (os.Open) %s\n", err)
 	}
+	defer closeFile(dictionaryFile)
 
 	start := time.Now()
 
@@ -95,8 +96,6 @@ func main() {
 	fmt.Printf("Max length of the searched word: %v\n", maxLenWord)
 	fmt.Printf("Max length searched word: %s\n", longestWord)
 	fmt.Printf("Execution time: %v s\n", executionTime.Seconds())
-
-	dictionaryFile.Close()
 }
 
 // checkQwertyWord checks can be typed on the keyboard (QWERTY) by moving along
@@ -128,4 +127,11 @@ func isLetter(str *string) bool {
 	}
 
 	return true
+}
+
+func closeFile(f *os.File) {
+	err := f.Close()
+	if err != nil {
+		log.Fatalf("Error (f.Close) %v\n", err)
+	}
 }
