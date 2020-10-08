@@ -177,6 +177,8 @@ func saveInfToFile(inf *infoFilm, fileInfName string) error {
 	valueInf := reflect.ValueOf(*inf)
 	typeOfInf := valueInf.Type()
 
+	// TODO Add a check that the line already exists in the file. By
+	//  calculating string hashes when opening a file.
 	_, err := os.Stat(fileInfName)
 	if os.IsNotExist(err) {
 		if fileInf, err = os.Create(fileInfName); err != nil {
