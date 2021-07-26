@@ -1,5 +1,5 @@
-// A program that displays all the words that can be typed on the keyboard
-// (QWERTY) by moving along the adjacent keys. Neighboring keys are considered
+// The program displays all the words that can be typed on the keyboard
+// (QWERTY), moving along the adjacent keys. Neighboring keys are considered
 // to have intersections with vertical and horizontal lines drawn through the
 // key in question.
 // For example, for D it is E, R, S, F, X, C (but not W), and for U it is Y, I,
