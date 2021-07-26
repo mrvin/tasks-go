@@ -1,7 +1,11 @@
 ## get-film-info
 
-This program gets information about the film from http://www.omdbapi.com/
-and downloads the film poster. Film information can be written to a text file.
+Problem from book 'The Go Programming Language. Alan A.A. Donovan,
+Brian W. Kernighan'. Exercis 4.13: The JSON-based web service of the Open
+Movie Database lets you search https://omdbapi.com/ for a movie by name
+and download its poster image. Write a tool poster that downloads the
+poster image for the movie named on the command line.
+
 ```shell script
 $ make build 
 go build -o get-film-inf
