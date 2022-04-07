@@ -1,0 +1,17 @@
+syntax = "proto3";
+package fib;
+
+option go_package = "./;fibpb";
+
+service Fib {
+	rpc Get (Request) returns (Response) {}
+}
+
+message Request {
+	uint64 nMin = 1;
+	uint64 nMax = 2;
+}
+
+message Response {
+	repeated string numbers = 1;
+}
