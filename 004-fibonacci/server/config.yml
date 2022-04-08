@@ -1,0 +1,11 @@
+# GRPC settings
+hostGRPC: localhost
+portGRPC: 55555
+
+# Redis database settings
+db:
+    hostDB: 172.17.0.2
+    portDB: 6379
+    passwordDB:
+    nameDB: 0
+
