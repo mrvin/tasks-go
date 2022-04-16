@@ -10,6 +10,8 @@ import (
 type Config struct {
 	HostGRPC string `yaml:"hostGRPC"`
 	PortGRPC int    `yaml:"portGRPC"`
+	HostHTTP string `yaml:"hostHTTP"`
+	PortHTTP int    `yaml:"portHTTP"`
 	DB       struct {
 		Host     string `yaml:"hostDB"`
 		Port     int    `yaml:"portDB"`

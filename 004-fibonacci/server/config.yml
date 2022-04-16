@@ -2,6 +2,10 @@
 hostGRPC: localhost
 portGRPC: 55555
 
+# HTTP settings
+hostHTTP: localhost
+portHTTP: 8080
+
 # Redis database settings
 db:
     hostDB: 172.17.0.2
