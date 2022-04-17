@@ -1,7 +1,7 @@
 package servhttp
 
 import (
-//	"encoding/json"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -86,12 +86,12 @@ func fibonaccihHandler(res http.ResponseWriter, req *http.Request, cacheFib cach
 		return
 	}
 
-//	resp := Numbers{slValFib}
-//	jsonResp, err := json.Marshal(resp)
-//	if err != nil {
-//		log.Printf("can't marshaling json: %v", err)
-//	}
-//	res.Header().Set("Content-Type", "application/json")
+	resp := Numbers{slValFib}
+	jsonResp, err := json.Marshal(resp)
+	if err != nil {
+		log.Printf("can't marshaling json: %v", err)
+	}
+	res.Header().Set("Content-Type", "application/json")
 
-	fmt.Fprint(res, slValFib)
+	fmt.Fprint(res, string(jsonResp))
 }

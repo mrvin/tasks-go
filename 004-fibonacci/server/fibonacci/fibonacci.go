@@ -45,8 +45,13 @@ func GetFibNumbers(cacheFib cache.Cache, from, to uint64) ([]string, error) {
 		}
 
 		slValFib = make([]string, to-from+1)
-		copy(slValFib, partLeftSlValFib[from:])
-		copy(slValFib[maxCachedNums-from+1:], partRightSlValFib[1:])
+		if from < uint64(len(partLeftSlValFib)) {
+			copy(slValFib, partLeftSlValFib[from:])
+			copy(slValFib[maxCachedNums-from+1:], partRightSlValFib[1:])
+		} else {
+			copy(slValFib, partRightSlValFib[from-1:])
+		}
+
 	}
 
 	return slValFib, nil
