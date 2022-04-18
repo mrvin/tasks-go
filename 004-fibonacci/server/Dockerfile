@@ -4,10 +4,20 @@ WORKDIR /app
 
 # Download necessary Go modules
 COPY go.mod go.sum ./
-RUN go mod download && go mod verify
+RUN go mod download
+
+COPY config.yml ./
 
 COPY *.go ./
+COPY cache cache/
+COPY config config/
+COPY fibonacci fibonacci/
+COPY servgrpc servgrpc/
+COPY servhttp servhttp/
 
 RUN go build
 
-ENTRYPOINT ["/app/004-fibonacci"]
+EXPOSE 8080
+EXPOSE 55555
+
+ENTRYPOINT ["/app/server"]
