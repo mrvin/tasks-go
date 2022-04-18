@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	pb "github.com/mrvin/tasks-go/004-fibonacci/fibpb"
+	"github.com/mrvin/tasks-go/004-fibonacci/fibpb"
 	"google.golang.org/grpc"
 )
 
@@ -20,16 +20,16 @@ func usage() {
 func main() {
 	var port int
 	var host string
-	var nMin, nMax uint64
+	var from, to uint64
 
 	flag.IntVar(&port, "port", 55555, "port")
 	flag.StringVar(&host, "host", "localhost", "host name")
-	flag.Uint64Var(&nMin, "min", 1, "interval [min, max]")
-	flag.Uint64Var(&nMax, "max", 10, "interval [min, max]")
+	flag.Uint64Var(&from, "from", 1, "interval [min, max]")
+	flag.Uint64Var(&to, "to", 10, "interval [min, max]")
 	flag.Usage = usage
 	flag.Parse()
 
-	if nMin > nMax {
+	if from > to {
 		log.Fatalf("fibclient: first arg should be less or equal second arg")
 	}
 
@@ -38,9 +38,9 @@ func main() {
 		log.Fatalf("fibclient: %v", err)
 	}
 	defer conn.Close()
-	c := pb.NewFibClient(conn)
+	c := fibpb.NewFibClient(conn)
 
-	req := &pb.Request{NMin: nMin, NMax: nMax}
+	req := &fibpb.Request{From: from, To: to}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -51,6 +51,6 @@ func main() {
 	}
 
 	for i, number := range r.Numbers {
-		fmt.Printf("%d - %s\n", nMin+uint64(i), number)
+		fmt.Printf("%d - %s\n", from+uint64(i), number)
 	}
 }
