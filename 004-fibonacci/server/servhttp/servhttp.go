@@ -92,6 +92,5 @@ func fibonaccihHandler(res http.ResponseWriter, req *http.Request, cacheFib cach
 		log.Printf("can't marshaling json: %v", err)
 	}
 	res.Header().Set("Content-Type", "application/json")
-
-	fmt.Fprint(res, string(jsonResp))
+	res.Write(jsonResp)
 }
