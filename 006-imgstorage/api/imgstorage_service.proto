@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package imgstorage;
+
+option go_package = "./;imgstorage";
+
+message Null {};
+
+message Img {
+	string name = 1;
+	bytes img = 2;
+}
+
+message NameImg {
+	string name = 1;
+}
+
+service ImgStorage {
+	rpc UploadImg (Img) returns (Null) {}
+	rpc DownloadImg (NameImg) returns (Img) {}
+}
+
