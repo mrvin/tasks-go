@@ -4,7 +4,7 @@
 // - protoc             v3.12.4
 // source: imgstorage_service.proto
 
-package imgstorage
+package imgstorageapi
 
 import (
 	context "context"
@@ -58,6 +58,7 @@ func (c *imgStorageClient) DownloadImg(ctx context.Context, in *NameImg, opts ..
 type ImgStorageServer interface {
 	UploadImg(context.Context, *Img) (*Null, error)
 	DownloadImg(context.Context, *NameImg) (*Img, error)
+	mustEmbedUnimplementedImgStorageServer()
 }
 
 // UnimplementedImgStorageServer must be embedded to have forward compatible implementations.
