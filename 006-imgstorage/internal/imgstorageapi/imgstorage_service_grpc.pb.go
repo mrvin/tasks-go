@@ -58,7 +58,6 @@ func (c *imgStorageClient) DownloadImg(ctx context.Context, in *NameImg, opts ..
 type ImgStorageServer interface {
 	UploadImg(context.Context, *Img) (*Null, error)
 	DownloadImg(context.Context, *NameImg) (*Img, error)
-	mustEmbedUnimplementedImgStorageServer()
 }
 
 // UnimplementedImgStorageServer must be embedded to have forward compatible implementations.
@@ -70,14 +69,6 @@ func (UnimplementedImgStorageServer) UploadImg(context.Context, *Img) (*Null, er
 }
 func (UnimplementedImgStorageServer) DownloadImg(context.Context, *NameImg) (*Img, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DownloadImg not implemented")
-}
-func (UnimplementedImgStorageServer) mustEmbedUnimplementedImgStorageServer() {}
-
-// UnsafeImgStorageServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ImgStorageServer will
-// result in compilation errors.
-type UnsafeImgStorageServer interface {
-	mustEmbedUnimplementedImgStorageServer()
 }
 
 func RegisterImgStorageServer(s grpc.ServiceRegistrar, srv ImgStorageServer) {
