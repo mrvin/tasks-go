@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package imgstorage;
 
-option go_package = "./;imgstorage";
+option go_package = "./;imgstorageapi";
 
 message Null {};
 
