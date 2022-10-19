@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package imgstorage;
 
+import "google/protobuf/timestamp.proto";
+
 option go_package = "./;imgstorageapi";
 
 message Null {};
@@ -15,8 +17,19 @@ message NameImg {
 	string name = 1;
 }
 
+message InfImg {
+	string name = 1;
+	google.protobuf.Timestamp createdAt = 2;
+	google.protobuf.Timestamp updatedAt = 3;
+}
+
+message ListImg {
+	repeated InfImg infImg = 1;
+}
+
 service ImgStorage {
 	rpc UploadImg (Img) returns (Null) {}
 	rpc DownloadImg (NameImg) returns (Img) {}
+	rpc GetListImg (Null) returns (ListImg) {}
 }
 
