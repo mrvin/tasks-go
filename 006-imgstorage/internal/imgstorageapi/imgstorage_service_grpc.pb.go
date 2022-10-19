@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ImgStorageClient interface {
 	UploadImg(ctx context.Context, in *Img, opts ...grpc.CallOption) (*Null, error)
 	DownloadImg(ctx context.Context, in *NameImg, opts ...grpc.CallOption) (*Img, error)
+	GetListImg(ctx context.Context, in *Null, opts ...grpc.CallOption) (*ListImg, error)
 }
 
 type imgStorageClient struct {
@@ -52,12 +53,22 @@ func (c *imgStorageClient) DownloadImg(ctx context.Context, in *NameImg, opts ..
 	return out, nil
 }
 
+func (c *imgStorageClient) GetListImg(ctx context.Context, in *Null, opts ...grpc.CallOption) (*ListImg, error) {
+	out := new(ListImg)
+	err := c.cc.Invoke(ctx, "/imgstorage.ImgStorage/GetListImg", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ImgStorageServer is the server API for ImgStorage service.
 // All implementations must embed UnimplementedImgStorageServer
 // for forward compatibility
 type ImgStorageServer interface {
 	UploadImg(context.Context, *Img) (*Null, error)
 	DownloadImg(context.Context, *NameImg) (*Img, error)
+	GetListImg(context.Context, *Null) (*ListImg, error)
 }
 
 // UnimplementedImgStorageServer must be embedded to have forward compatible implementations.
@@ -69,6 +80,17 @@ func (UnimplementedImgStorageServer) UploadImg(context.Context, *Img) (*Null, er
 }
 func (UnimplementedImgStorageServer) DownloadImg(context.Context, *NameImg) (*Img, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DownloadImg not implemented")
+}
+func (UnimplementedImgStorageServer) GetListImg(context.Context, *Null) (*ListImg, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetListImg not implemented")
+}
+func (UnimplementedImgStorageServer) mustEmbedUnimplementedImgStorageServer() {}
+
+// UnsafeImgStorageServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ImgStorageServer will
+// result in compilation errors.
+type UnsafeImgStorageServer interface {
+	mustEmbedUnimplementedImgStorageServer()
 }
 
 func RegisterImgStorageServer(s grpc.ServiceRegistrar, srv ImgStorageServer) {
@@ -111,6 +133,24 @@ func _ImgStorage_DownloadImg_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ImgStorage_GetListImg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Null)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ImgStorageServer).GetListImg(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/imgstorage.ImgStorage/GetListImg",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ImgStorageServer).GetListImg(ctx, req.(*Null))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ImgStorage_ServiceDesc is the grpc.ServiceDesc for ImgStorage service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -125,6 +165,10 @@ var ImgStorage_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DownloadImg",
 			Handler:    _ImgStorage_DownloadImg_Handler,
+		},
+		{
+			MethodName: "GetListImg",
+			Handler:    _ImgStorage_GetListImg_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
