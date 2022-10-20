@@ -1,0 +1,5 @@
+# GRPC server settings
+host: localhost
+port: 55555
+# Directory for saving images
+dir: "./image"
