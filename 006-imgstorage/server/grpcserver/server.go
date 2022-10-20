@@ -13,6 +13,12 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// numGoroutinUploadDownload - number of goroutines upload/download files.
+const numGoroutinUploadDownload = 10
+
+// numGoroutinList - number of goroutines get list files.
+const numGoroutinList = 100
+
 type Config struct {
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
@@ -20,16 +26,20 @@ type Config struct {
 }
 
 type Server struct {
-	serv *grpc.Server
-	ln   net.Listener
-	addr string
-	dir  string
+	serv               *grpc.Server
+	ln                 net.Listener
+	addr               string
+	dir                string
+	semaUploadDownload chan struct{}
+	semaList           chan struct{}
 }
 
 func New(conf *Config) (*Server, error) {
 	var server Server
 
 	server.dir = conf.Dir
+	server.semaUploadDownload = make(chan struct{}, numGoroutinUploadDownload)
+	server.semaList = make(chan struct{}, numGoroutinList)
 
 	var err error
 	server.addr = fmt.Sprintf("%s:%d", conf.Host, conf.Port)
@@ -59,13 +69,15 @@ func (s *Server) Stop() {
 }
 
 func (s *Server) UploadImg(ctx context.Context, img *imgstorageapi.Img) (*imgstorageapi.Null, error) {
+	s.semaUploadDownload <- struct{}{}        // acquire token
+	defer func() { <-s.semaUploadDownload }() // release token
+
 	name := img.Name
 	image := img.Img
 
 	fileImg, err := os.Create(filepath.Join(s.dir, name))
 	if err != nil {
-		log.Printf("Create image: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("create image: %w", err)
 	}
 
 	size, err := fileImg.Write(image)
@@ -81,12 +93,14 @@ func (s *Server) UploadImg(ctx context.Context, img *imgstorageapi.Img) (*imgsto
 }
 
 func (s *Server) DownloadImg(ctx context.Context, nameImg *imgstorageapi.NameImg) (*imgstorageapi.Img, error) {
+	s.semaUploadDownload <- struct{}{}        // acquire token
+	defer func() { <-s.semaUploadDownload }() // release token
+
 	name := nameImg.Name
 
 	image, err := os.ReadFile(filepath.Join(s.dir, name))
 	if err != nil {
-		log.Printf("Read image: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("read image: %w", err)
 	}
 
 	log.Printf("Image \"%s\" download, %d bytes", name, len(image))
@@ -95,9 +109,12 @@ func (s *Server) DownloadImg(ctx context.Context, nameImg *imgstorageapi.NameImg
 }
 
 func (s *Server) GetListImg(ctx context.Context, _ *imgstorageapi.Null) (*imgstorageapi.ListImg, error) {
+	s.semaList <- struct{}{}        // acquire token
+	defer func() { <-s.semaList }() // release token
+
 	entries, err := os.ReadDir(s.dir)
 	if err != nil {
-		return nil, fmt.Errorf("Reading a image directory: %v", err)
+		return nil, fmt.Errorf("reading a image directory: %w", err)
 	}
 
 	listImg := make([]*imgstorageapi.InfImg, 0, len(entries))
@@ -105,7 +122,7 @@ func (s *Server) GetListImg(ctx context.Context, _ *imgstorageapi.Null) (*imgsto
 		if !entry.IsDir() {
 			info, err := entry.Info()
 			if err != nil {
-				return nil, fmt.Errorf("Get information: %v", err)
+				return nil, fmt.Errorf("get information: %w", err)
 			}
 			listImg = append(listImg, &imgstorageapi.InfImg{Name: entry.Name(), ModifiedAt: timestamppb.New(info.ModTime())})
 		}
