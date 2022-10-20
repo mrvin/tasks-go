@@ -10,6 +10,7 @@ import (
 
 	"github.com/mrvin/tasks-go/006-imgstorage/internal/imgstorageapi"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Config struct {
@@ -91,4 +92,26 @@ func (s *Server) DownloadImg(ctx context.Context, nameImg *imgstorageapi.NameImg
 	log.Printf("Image \"%s\" download, %d bytes", name, len(image))
 
 	return &imgstorageapi.Img{Name: name, Img: image}, nil
+}
+
+func (s *Server) GetListImg(ctx context.Context, _ *imgstorageapi.Null) (*imgstorageapi.ListImg, error) {
+	entries, err := os.ReadDir(s.dir)
+	if err != nil {
+		return nil, fmt.Errorf("Reading a image directory: %v", err)
+	}
+
+	listImg := make([]*imgstorageapi.InfImg, 0, len(entries))
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			info, err := entry.Info()
+			if err != nil {
+				return nil, fmt.Errorf("Get information: %v", err)
+			}
+			listImg = append(listImg, &imgstorageapi.InfImg{Name: entry.Name(), ModifiedAt: timestamppb.New(info.ModTime())})
+		}
+	}
+
+	log.Println("Get image list")
+
+	return &imgstorageapi.ListImg{InfImg: listImg}, nil
 }
