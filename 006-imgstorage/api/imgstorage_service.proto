@@ -19,8 +19,7 @@ message NameImg {
 
 message InfImg {
 	string name = 1;
-	google.protobuf.Timestamp createdAt = 2;
-	google.protobuf.Timestamp updatedAt = 3;
+	google.protobuf.Timestamp modifiedAt = 2;
 }
 
 message ListImg {
