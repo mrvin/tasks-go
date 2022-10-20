@@ -34,7 +34,7 @@ func main() {
 		return
 	}
 
-	signals := make(chan os.Signal)
+	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT /*(Control-C)*/, syscall.SIGTERM)
 	go listenForShutdown(signals, serverGRPC)
 
