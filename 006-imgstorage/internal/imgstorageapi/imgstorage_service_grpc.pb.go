@@ -63,7 +63,7 @@ func (c *imgStorageClient) GetListImg(ctx context.Context, in *Null, opts ...grp
 }
 
 // ImgStorageServer is the server API for ImgStorage service.
-// All implementations must embed UnimplementedImgStorageServer
+// All implementations should embed UnimplementedImgStorageServer
 // for forward compatibility
 type ImgStorageServer interface {
 	UploadImg(context.Context, *Img) (*Null, error)
@@ -71,7 +71,7 @@ type ImgStorageServer interface {
 	GetListImg(context.Context, *Null) (*ListImg, error)
 }
 
-// UnimplementedImgStorageServer must be embedded to have forward compatible implementations.
+// UnimplementedImgStorageServer should be embedded to have forward compatible implementations.
 type UnimplementedImgStorageServer struct {
 }
 
@@ -84,7 +84,6 @@ func (UnimplementedImgStorageServer) DownloadImg(context.Context, *NameImg) (*Im
 func (UnimplementedImgStorageServer) GetListImg(context.Context, *Null) (*ListImg, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetListImg not implemented")
 }
-func (UnimplementedImgStorageServer) mustEmbedUnimplementedImgStorageServer() {}
 
 // UnsafeImgStorageServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to ImgStorageServer will

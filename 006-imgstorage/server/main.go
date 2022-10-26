@@ -1,4 +1,4 @@
-//go:generate protoc -I=../api/ --go_out=../internal/imgstorageapi --go-grpc_out=../internal/imgstorageapi ../api/imgstorage_service.proto
+//go:generate protoc -I=../api/ --go_out=../internal/imgstorageapi --go-grpc_out=require_unimplemented_servers=false:../internal/imgstorageapi ../api/imgstorage_service.proto
 package main
 
 import (
