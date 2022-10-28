@@ -10,7 +10,7 @@ message Null {};
 
 message Img {
 	string name = 1;
-	bytes img = 2;
+	bytes chunk_data = 2;
 }
 
 message NameImg {
@@ -27,8 +27,8 @@ message ListImg {
 }
 
 service ImgStorage {
-	rpc UploadImg (Img) returns (Null) {}
-	rpc DownloadImg (NameImg) returns (Img) {}
+	rpc UploadImg (stream Img) returns (Null) {}
+	rpc DownloadImg (NameImg) returns (stream Img) {}
 	rpc GetListImg (Null) returns (ListImg) {}
 }
 

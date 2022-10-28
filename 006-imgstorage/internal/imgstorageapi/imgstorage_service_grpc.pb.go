@@ -22,8 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ImgStorageClient interface {
-	UploadImg(ctx context.Context, in *Img, opts ...grpc.CallOption) (*Null, error)
-	DownloadImg(ctx context.Context, in *NameImg, opts ...grpc.CallOption) (*Img, error)
+	UploadImg(ctx context.Context, opts ...grpc.CallOption) (ImgStorage_UploadImgClient, error)
+	DownloadImg(ctx context.Context, in *NameImg, opts ...grpc.CallOption) (ImgStorage_DownloadImgClient, error)
 	GetListImg(ctx context.Context, in *Null, opts ...grpc.CallOption) (*ListImg, error)
 }
 
@@ -35,22 +35,70 @@ func NewImgStorageClient(cc grpc.ClientConnInterface) ImgStorageClient {
 	return &imgStorageClient{cc}
 }
 
-func (c *imgStorageClient) UploadImg(ctx context.Context, in *Img, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
-	err := c.cc.Invoke(ctx, "/imgstorage.ImgStorage/UploadImg", in, out, opts...)
+func (c *imgStorageClient) UploadImg(ctx context.Context, opts ...grpc.CallOption) (ImgStorage_UploadImgClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ImgStorage_ServiceDesc.Streams[0], "/imgstorage.ImgStorage/UploadImg", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &imgStorageUploadImgClient{stream}
+	return x, nil
 }
 
-func (c *imgStorageClient) DownloadImg(ctx context.Context, in *NameImg, opts ...grpc.CallOption) (*Img, error) {
-	out := new(Img)
-	err := c.cc.Invoke(ctx, "/imgstorage.ImgStorage/DownloadImg", in, out, opts...)
+type ImgStorage_UploadImgClient interface {
+	Send(*Img) error
+	CloseAndRecv() (*Null, error)
+	grpc.ClientStream
+}
+
+type imgStorageUploadImgClient struct {
+	grpc.ClientStream
+}
+
+func (x *imgStorageUploadImgClient) Send(m *Img) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *imgStorageUploadImgClient) CloseAndRecv() (*Null, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(Null)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *imgStorageClient) DownloadImg(ctx context.Context, in *NameImg, opts ...grpc.CallOption) (ImgStorage_DownloadImgClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ImgStorage_ServiceDesc.Streams[1], "/imgstorage.ImgStorage/DownloadImg", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &imgStorageDownloadImgClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ImgStorage_DownloadImgClient interface {
+	Recv() (*Img, error)
+	grpc.ClientStream
+}
+
+type imgStorageDownloadImgClient struct {
+	grpc.ClientStream
+}
+
+func (x *imgStorageDownloadImgClient) Recv() (*Img, error) {
+	m := new(Img)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *imgStorageClient) GetListImg(ctx context.Context, in *Null, opts ...grpc.CallOption) (*ListImg, error) {
@@ -66,8 +114,8 @@ func (c *imgStorageClient) GetListImg(ctx context.Context, in *Null, opts ...grp
 // All implementations should embed UnimplementedImgStorageServer
 // for forward compatibility
 type ImgStorageServer interface {
-	UploadImg(context.Context, *Img) (*Null, error)
-	DownloadImg(context.Context, *NameImg) (*Img, error)
+	UploadImg(ImgStorage_UploadImgServer) error
+	DownloadImg(*NameImg, ImgStorage_DownloadImgServer) error
 	GetListImg(context.Context, *Null) (*ListImg, error)
 }
 
@@ -75,11 +123,11 @@ type ImgStorageServer interface {
 type UnimplementedImgStorageServer struct {
 }
 
-func (UnimplementedImgStorageServer) UploadImg(context.Context, *Img) (*Null, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UploadImg not implemented")
+func (UnimplementedImgStorageServer) UploadImg(ImgStorage_UploadImgServer) error {
+	return status.Errorf(codes.Unimplemented, "method UploadImg not implemented")
 }
-func (UnimplementedImgStorageServer) DownloadImg(context.Context, *NameImg) (*Img, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DownloadImg not implemented")
+func (UnimplementedImgStorageServer) DownloadImg(*NameImg, ImgStorage_DownloadImgServer) error {
+	return status.Errorf(codes.Unimplemented, "method DownloadImg not implemented")
 }
 func (UnimplementedImgStorageServer) GetListImg(context.Context, *Null) (*ListImg, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetListImg not implemented")
@@ -96,40 +144,51 @@ func RegisterImgStorageServer(s grpc.ServiceRegistrar, srv ImgStorageServer) {
 	s.RegisterService(&ImgStorage_ServiceDesc, srv)
 }
 
-func _ImgStorage_UploadImg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Img)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ImgStorageServer).UploadImg(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/imgstorage.ImgStorage/UploadImg",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ImgStorageServer).UploadImg(ctx, req.(*Img))
-	}
-	return interceptor(ctx, in, info, handler)
+func _ImgStorage_UploadImg_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ImgStorageServer).UploadImg(&imgStorageUploadImgServer{stream})
 }
 
-func _ImgStorage_DownloadImg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NameImg)
-	if err := dec(in); err != nil {
+type ImgStorage_UploadImgServer interface {
+	SendAndClose(*Null) error
+	Recv() (*Img, error)
+	grpc.ServerStream
+}
+
+type imgStorageUploadImgServer struct {
+	grpc.ServerStream
+}
+
+func (x *imgStorageUploadImgServer) SendAndClose(m *Null) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *imgStorageUploadImgServer) Recv() (*Img, error) {
+	m := new(Img)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(ImgStorageServer).DownloadImg(ctx, in)
+	return m, nil
+}
+
+func _ImgStorage_DownloadImg_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(NameImg)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/imgstorage.ImgStorage/DownloadImg",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ImgStorageServer).DownloadImg(ctx, req.(*NameImg))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(ImgStorageServer).DownloadImg(m, &imgStorageDownloadImgServer{stream})
+}
+
+type ImgStorage_DownloadImgServer interface {
+	Send(*Img) error
+	grpc.ServerStream
+}
+
+type imgStorageDownloadImgServer struct {
+	grpc.ServerStream
+}
+
+func (x *imgStorageDownloadImgServer) Send(m *Img) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _ImgStorage_GetListImg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -158,18 +217,21 @@ var ImgStorage_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ImgStorageServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "UploadImg",
-			Handler:    _ImgStorage_UploadImg_Handler,
-		},
-		{
-			MethodName: "DownloadImg",
-			Handler:    _ImgStorage_DownloadImg_Handler,
-		},
-		{
 			MethodName: "GetListImg",
 			Handler:    _ImgStorage_GetListImg_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "UploadImg",
+			Handler:       _ImgStorage_UploadImg_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "DownloadImg",
+			Handler:       _ImgStorage_DownloadImg_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "imgstorage_service.proto",
 }
