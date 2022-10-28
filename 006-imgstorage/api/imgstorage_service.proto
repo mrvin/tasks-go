@@ -6,29 +6,40 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "./;imgstorageapi";
 
-message Null {};
-
-message Img {
-	string name = 1;
-	bytes chunk_data = 2;
+message UploadImageRequest {
+	oneof data {
+		string name = 1;
+		bytes chunk_data = 2;
+	}
 }
 
-message NameImg {
+message UploadImageResponse {
+	string id = 1;
+	uint32 size = 2;
+}
+
+message DownloadImageRequest {
 	string name = 1;
 }
 
-message InfImg {
+message DownloadImageResponse {
+	bytes chunk_data = 1;
+}
+
+message GetListImageRequest {};
+
+message ImageInfo {
 	string name = 1;
 	google.protobuf.Timestamp modifiedAt = 2;
 }
 
-message ListImg {
-	repeated InfImg infImg = 1;
+message GetListImageResponse {
+	repeated ImageInfo infImg = 1;
 }
 
 service ImgStorage {
-	rpc UploadImg (stream Img) returns (Null) {}
-	rpc DownloadImg (NameImg) returns (stream Img) {}
-	rpc GetListImg (Null) returns (ListImg) {}
+	rpc UploadImage (stream UploadImageRequest) returns (UploadImageResponse) {}
+	rpc DownloadImage (DownloadImageRequest) returns (stream DownloadImageResponse) {}
+	rpc GetListImage (GetListImageRequest) returns (GetListImageResponse) {}
 }
 

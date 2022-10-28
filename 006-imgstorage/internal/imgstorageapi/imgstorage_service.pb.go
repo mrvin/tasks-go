@@ -21,14 +21,19 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Null struct {
+type UploadImageRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Data:
+	//	*UploadImageRequest_Name
+	//	*UploadImageRequest_ChunkData
+	Data isUploadImageRequest_Data `protobuf_oneof:"data"`
 }
 
-func (x *Null) Reset() {
-	*x = Null{}
+func (x *UploadImageRequest) Reset() {
+	*x = UploadImageRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_imgstorage_service_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -36,13 +41,13 @@ func (x *Null) Reset() {
 	}
 }
 
-func (x *Null) String() string {
+func (x *UploadImageRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Null) ProtoMessage() {}
+func (*UploadImageRequest) ProtoMessage() {}
 
-func (x *Null) ProtoReflect() protoreflect.Message {
+func (x *UploadImageRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_imgstorage_service_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -54,22 +59,59 @@ func (x *Null) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Null.ProtoReflect.Descriptor instead.
-func (*Null) Descriptor() ([]byte, []int) {
+// Deprecated: Use UploadImageRequest.ProtoReflect.Descriptor instead.
+func (*UploadImageRequest) Descriptor() ([]byte, []int) {
 	return file_imgstorage_service_proto_rawDescGZIP(), []int{0}
 }
 
-type Img struct {
+func (m *UploadImageRequest) GetData() isUploadImageRequest_Data {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (x *UploadImageRequest) GetName() string {
+	if x, ok := x.GetData().(*UploadImageRequest_Name); ok {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UploadImageRequest) GetChunkData() []byte {
+	if x, ok := x.GetData().(*UploadImageRequest_ChunkData); ok {
+		return x.ChunkData
+	}
+	return nil
+}
+
+type isUploadImageRequest_Data interface {
+	isUploadImageRequest_Data()
+}
+
+type UploadImageRequest_Name struct {
+	Name string `protobuf:"bytes,1,opt,name=name,proto3,oneof"`
+}
+
+type UploadImageRequest_ChunkData struct {
+	ChunkData []byte `protobuf:"bytes,2,opt,name=chunk_data,json=chunkData,proto3,oneof"`
+}
+
+func (*UploadImageRequest_Name) isUploadImageRequest_Data() {}
+
+func (*UploadImageRequest_ChunkData) isUploadImageRequest_Data() {}
+
+type UploadImageResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name      string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	ChunkData []byte `protobuf:"bytes,2,opt,name=chunk_data,json=chunkData,proto3" json:"chunk_data,omitempty"`
+	Id   string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Size uint32 `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
 }
 
-func (x *Img) Reset() {
-	*x = Img{}
+func (x *UploadImageResponse) Reset() {
+	*x = UploadImageResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_imgstorage_service_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -77,13 +119,13 @@ func (x *Img) Reset() {
 	}
 }
 
-func (x *Img) String() string {
+func (x *UploadImageResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Img) ProtoMessage() {}
+func (*UploadImageResponse) ProtoMessage() {}
 
-func (x *Img) ProtoReflect() protoreflect.Message {
+func (x *UploadImageResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_imgstorage_service_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -95,26 +137,26 @@ func (x *Img) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Img.ProtoReflect.Descriptor instead.
-func (*Img) Descriptor() ([]byte, []int) {
+// Deprecated: Use UploadImageResponse.ProtoReflect.Descriptor instead.
+func (*UploadImageResponse) Descriptor() ([]byte, []int) {
 	return file_imgstorage_service_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Img) GetName() string {
+func (x *UploadImageResponse) GetId() string {
 	if x != nil {
-		return x.Name
+		return x.Id
 	}
 	return ""
 }
 
-func (x *Img) GetChunkData() []byte {
+func (x *UploadImageResponse) GetSize() uint32 {
 	if x != nil {
-		return x.ChunkData
+		return x.Size
 	}
-	return nil
+	return 0
 }
 
-type NameImg struct {
+type DownloadImageRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -122,8 +164,8 @@ type NameImg struct {
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 }
 
-func (x *NameImg) Reset() {
-	*x = NameImg{}
+func (x *DownloadImageRequest) Reset() {
+	*x = DownloadImageRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_imgstorage_service_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -131,13 +173,13 @@ func (x *NameImg) Reset() {
 	}
 }
 
-func (x *NameImg) String() string {
+func (x *DownloadImageRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*NameImg) ProtoMessage() {}
+func (*DownloadImageRequest) ProtoMessage() {}
 
-func (x *NameImg) ProtoReflect() protoreflect.Message {
+func (x *DownloadImageRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_imgstorage_service_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -149,29 +191,28 @@ func (x *NameImg) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use NameImg.ProtoReflect.Descriptor instead.
-func (*NameImg) Descriptor() ([]byte, []int) {
+// Deprecated: Use DownloadImageRequest.ProtoReflect.Descriptor instead.
+func (*DownloadImageRequest) Descriptor() ([]byte, []int) {
 	return file_imgstorage_service_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *NameImg) GetName() string {
+func (x *DownloadImageRequest) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-type InfImg struct {
+type DownloadImageResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name       string               `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	ModifiedAt *timestamp.Timestamp `protobuf:"bytes,2,opt,name=modifiedAt,proto3" json:"modifiedAt,omitempty"`
+	ChunkData []byte `protobuf:"bytes,1,opt,name=chunk_data,json=chunkData,proto3" json:"chunk_data,omitempty"`
 }
 
-func (x *InfImg) Reset() {
-	*x = InfImg{}
+func (x *DownloadImageResponse) Reset() {
+	*x = DownloadImageResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_imgstorage_service_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -179,13 +220,13 @@ func (x *InfImg) Reset() {
 	}
 }
 
-func (x *InfImg) String() string {
+func (x *DownloadImageResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*InfImg) ProtoMessage() {}
+func (*DownloadImageResponse) ProtoMessage() {}
 
-func (x *InfImg) ProtoReflect() protoreflect.Message {
+func (x *DownloadImageResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_imgstorage_service_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -197,35 +238,26 @@ func (x *InfImg) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use InfImg.ProtoReflect.Descriptor instead.
-func (*InfImg) Descriptor() ([]byte, []int) {
+// Deprecated: Use DownloadImageResponse.ProtoReflect.Descriptor instead.
+func (*DownloadImageResponse) Descriptor() ([]byte, []int) {
 	return file_imgstorage_service_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *InfImg) GetName() string {
+func (x *DownloadImageResponse) GetChunkData() []byte {
 	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *InfImg) GetModifiedAt() *timestamp.Timestamp {
-	if x != nil {
-		return x.ModifiedAt
+		return x.ChunkData
 	}
 	return nil
 }
 
-type ListImg struct {
+type GetListImageRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	InfImg []*InfImg `protobuf:"bytes,1,rep,name=infImg,proto3" json:"infImg,omitempty"`
 }
 
-func (x *ListImg) Reset() {
-	*x = ListImg{}
+func (x *GetListImageRequest) Reset() {
+	*x = GetListImageRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_imgstorage_service_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -233,13 +265,13 @@ func (x *ListImg) Reset() {
 	}
 }
 
-func (x *ListImg) String() string {
+func (x *GetListImageRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListImg) ProtoMessage() {}
+func (*GetListImageRequest) ProtoMessage() {}
 
-func (x *ListImg) ProtoReflect() protoreflect.Message {
+func (x *GetListImageRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_imgstorage_service_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -251,12 +283,107 @@ func (x *ListImg) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListImg.ProtoReflect.Descriptor instead.
-func (*ListImg) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetListImageRequest.ProtoReflect.Descriptor instead.
+func (*GetListImageRequest) Descriptor() ([]byte, []int) {
 	return file_imgstorage_service_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *ListImg) GetInfImg() []*InfImg {
+type ImageInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name       string               `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ModifiedAt *timestamp.Timestamp `protobuf:"bytes,2,opt,name=modifiedAt,proto3" json:"modifiedAt,omitempty"`
+}
+
+func (x *ImageInfo) Reset() {
+	*x = ImageInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_imgstorage_service_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ImageInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImageInfo) ProtoMessage() {}
+
+func (x *ImageInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_imgstorage_service_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImageInfo.ProtoReflect.Descriptor instead.
+func (*ImageInfo) Descriptor() ([]byte, []int) {
+	return file_imgstorage_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ImageInfo) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ImageInfo) GetModifiedAt() *timestamp.Timestamp {
+	if x != nil {
+		return x.ModifiedAt
+	}
+	return nil
+}
+
+type GetListImageResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	InfImg []*ImageInfo `protobuf:"bytes,1,rep,name=infImg,proto3" json:"infImg,omitempty"`
+}
+
+func (x *GetListImageResponse) Reset() {
+	*x = GetListImageResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_imgstorage_service_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetListImageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetListImageResponse) ProtoMessage() {}
+
+func (x *GetListImageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_imgstorage_service_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetListImageResponse.ProtoReflect.Descriptor instead.
+func (*GetListImageResponse) Descriptor() ([]byte, []int) {
+	return file_imgstorage_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetListImageResponse) GetInfImg() []*ImageInfo {
 	if x != nil {
 		return x.InfImg
 	}
@@ -270,35 +397,53 @@ var file_imgstorage_service_proto_rawDesc = []byte{
 	0x76, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0a, 0x69, 0x6d, 0x67, 0x73,
 	0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
-	0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x06, 0x0a, 0x04, 0x4e, 0x75, 0x6c, 0x6c, 0x22,
-	0x38, 0x0a, 0x03, 0x49, 0x6d, 0x67, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x63, 0x68,
-	0x75, 0x6e, 0x6b, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09,
-	0x63, 0x68, 0x75, 0x6e, 0x6b, 0x44, 0x61, 0x74, 0x61, 0x22, 0x1d, 0x0a, 0x07, 0x4e, 0x61, 0x6d,
-	0x65, 0x49, 0x6d, 0x67, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x58, 0x0a, 0x06, 0x49, 0x6e, 0x66, 0x49,
-	0x6d, 0x67, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x3a, 0x0a, 0x0a, 0x6d, 0x6f, 0x64, 0x69, 0x66, 0x69,
-	0x65, 0x64, 0x41, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f,
-	0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d,
-	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x0a, 0x6d, 0x6f, 0x64, 0x69, 0x66, 0x69, 0x65, 0x64,
-	0x41, 0x74, 0x22, 0x35, 0x0a, 0x07, 0x4c, 0x69, 0x73, 0x74, 0x49, 0x6d, 0x67, 0x12, 0x2a, 0x0a,
-	0x06, 0x69, 0x6e, 0x66, 0x49, 0x6d, 0x67, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e,
-	0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x2e, 0x49, 0x6e, 0x66, 0x49, 0x6d,
-	0x67, 0x52, 0x06, 0x69, 0x6e, 0x66, 0x49, 0x6d, 0x67, 0x32, 0xb0, 0x01, 0x0a, 0x0a, 0x49, 0x6d,
-	0x67, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x32, 0x0a, 0x09, 0x55, 0x70, 0x6c, 0x6f,
-	0x61, 0x64, 0x49, 0x6d, 0x67, 0x12, 0x0f, 0x2e, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61,
-	0x67, 0x65, 0x2e, 0x49, 0x6d, 0x67, 0x1a, 0x10, 0x2e, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72,
-	0x61, 0x67, 0x65, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x28, 0x01, 0x12, 0x37, 0x0a, 0x0b,
-	0x44, 0x6f, 0x77, 0x6e, 0x6c, 0x6f, 0x61, 0x64, 0x49, 0x6d, 0x67, 0x12, 0x13, 0x2e, 0x69, 0x6d,
-	0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x49, 0x6d, 0x67,
-	0x1a, 0x0f, 0x2e, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x2e, 0x49, 0x6d,
-	0x67, 0x22, 0x00, 0x30, 0x01, 0x12, 0x35, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x4c, 0x69, 0x73, 0x74,
-	0x49, 0x6d, 0x67, 0x12, 0x10, 0x2e, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
-	0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x1a, 0x13, 0x2e, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61,
-	0x67, 0x65, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x49, 0x6d, 0x67, 0x22, 0x00, 0x42, 0x12, 0x5a, 0x10,
-	0x2e, 0x2f, 0x3b, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x61, 0x70, 0x69,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x53, 0x0a, 0x12, 0x55, 0x70, 0x6c, 0x6f, 0x61,
+	0x64, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x12, 0x1f, 0x0a, 0x0a, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x5f, 0x64, 0x61, 0x74,
+	0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x48, 0x00, 0x52, 0x09, 0x63, 0x68, 0x75, 0x6e, 0x6b,
+	0x44, 0x61, 0x74, 0x61, 0x42, 0x06, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x39, 0x0a, 0x13,
+	0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x0d, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x22, 0x2a, 0x0a, 0x14, 0x44, 0x6f, 0x77, 0x6e, 0x6c,
+	0x6f, 0x61, 0x64, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x22, 0x36, 0x0a, 0x15, 0x44, 0x6f, 0x77, 0x6e, 0x6c, 0x6f, 0x61, 0x64, 0x49,
+	0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1d, 0x0a, 0x0a,
+	0x63, 0x68, 0x75, 0x6e, 0x6b, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c,
+	0x52, 0x09, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x44, 0x61, 0x74, 0x61, 0x22, 0x15, 0x0a, 0x13, 0x47,
+	0x65, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x22, 0x5b, 0x0a, 0x09, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x12,
+	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x12, 0x3a, 0x0a, 0x0a, 0x6d, 0x6f, 0x64, 0x69, 0x66, 0x69, 0x65, 0x64, 0x41,
+	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74,
+	0x61, 0x6d, 0x70, 0x52, 0x0a, 0x6d, 0x6f, 0x64, 0x69, 0x66, 0x69, 0x65, 0x64, 0x41, 0x74, 0x22,
+	0x45, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2d, 0x0a, 0x06, 0x69, 0x6e, 0x66, 0x49, 0x6d,
+	0x67, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f,
+	0x72, 0x61, 0x67, 0x65, 0x2e, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x06,
+	0x69, 0x6e, 0x66, 0x49, 0x6d, 0x67, 0x32, 0x8f, 0x02, 0x0a, 0x0a, 0x49, 0x6d, 0x67, 0x53, 0x74,
+	0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x52, 0x0a, 0x0b, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x49,
+	0x6d, 0x61, 0x67, 0x65, 0x12, 0x1e, 0x2e, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67,
+	0x65, 0x2e, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x1f, 0x2e, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67,
+	0x65, 0x2e, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x28, 0x01, 0x12, 0x58, 0x0a, 0x0d, 0x44, 0x6f, 0x77,
+	0x6e, 0x6c, 0x6f, 0x61, 0x64, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x12, 0x20, 0x2e, 0x69, 0x6d, 0x67,
+	0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x2e, 0x44, 0x6f, 0x77, 0x6e, 0x6c, 0x6f, 0x61, 0x64,
+	0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x69,
+	0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x2e, 0x44, 0x6f, 0x77, 0x6e, 0x6c, 0x6f,
+	0x61, 0x64, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x00, 0x30, 0x01, 0x12, 0x53, 0x0a, 0x0c, 0x47, 0x65, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x49, 0x6d,
+	0x61, 0x67, 0x65, 0x12, 0x1f, 0x2e, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
+	0x2e, 0x47, 0x65, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x69, 0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67,
+	0x65, 0x2e, 0x47, 0x65, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x12, 0x5a, 0x10, 0x2e, 0x2f, 0x3b, 0x69,
+	0x6d, 0x67, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -313,24 +458,26 @@ func file_imgstorage_service_proto_rawDescGZIP() []byte {
 	return file_imgstorage_service_proto_rawDescData
 }
 
-var file_imgstorage_service_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_imgstorage_service_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_imgstorage_service_proto_goTypes = []interface{}{
-	(*Null)(nil),                // 0: imgstorage.Null
-	(*Img)(nil),                 // 1: imgstorage.Img
-	(*NameImg)(nil),             // 2: imgstorage.NameImg
-	(*InfImg)(nil),              // 3: imgstorage.InfImg
-	(*ListImg)(nil),             // 4: imgstorage.ListImg
-	(*timestamp.Timestamp)(nil), // 5: google.protobuf.Timestamp
+	(*UploadImageRequest)(nil),    // 0: imgstorage.UploadImageRequest
+	(*UploadImageResponse)(nil),   // 1: imgstorage.UploadImageResponse
+	(*DownloadImageRequest)(nil),  // 2: imgstorage.DownloadImageRequest
+	(*DownloadImageResponse)(nil), // 3: imgstorage.DownloadImageResponse
+	(*GetListImageRequest)(nil),   // 4: imgstorage.GetListImageRequest
+	(*ImageInfo)(nil),             // 5: imgstorage.ImageInfo
+	(*GetListImageResponse)(nil),  // 6: imgstorage.GetListImageResponse
+	(*timestamp.Timestamp)(nil),   // 7: google.protobuf.Timestamp
 }
 var file_imgstorage_service_proto_depIdxs = []int32{
-	5, // 0: imgstorage.InfImg.modifiedAt:type_name -> google.protobuf.Timestamp
-	3, // 1: imgstorage.ListImg.infImg:type_name -> imgstorage.InfImg
-	1, // 2: imgstorage.ImgStorage.UploadImg:input_type -> imgstorage.Img
-	2, // 3: imgstorage.ImgStorage.DownloadImg:input_type -> imgstorage.NameImg
-	0, // 4: imgstorage.ImgStorage.GetListImg:input_type -> imgstorage.Null
-	0, // 5: imgstorage.ImgStorage.UploadImg:output_type -> imgstorage.Null
-	1, // 6: imgstorage.ImgStorage.DownloadImg:output_type -> imgstorage.Img
-	4, // 7: imgstorage.ImgStorage.GetListImg:output_type -> imgstorage.ListImg
+	7, // 0: imgstorage.ImageInfo.modifiedAt:type_name -> google.protobuf.Timestamp
+	5, // 1: imgstorage.GetListImageResponse.infImg:type_name -> imgstorage.ImageInfo
+	0, // 2: imgstorage.ImgStorage.UploadImage:input_type -> imgstorage.UploadImageRequest
+	2, // 3: imgstorage.ImgStorage.DownloadImage:input_type -> imgstorage.DownloadImageRequest
+	4, // 4: imgstorage.ImgStorage.GetListImage:input_type -> imgstorage.GetListImageRequest
+	1, // 5: imgstorage.ImgStorage.UploadImage:output_type -> imgstorage.UploadImageResponse
+	3, // 6: imgstorage.ImgStorage.DownloadImage:output_type -> imgstorage.DownloadImageResponse
+	6, // 7: imgstorage.ImgStorage.GetListImage:output_type -> imgstorage.GetListImageResponse
 	5, // [5:8] is the sub-list for method output_type
 	2, // [2:5] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
@@ -345,7 +492,7 @@ func file_imgstorage_service_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_imgstorage_service_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Null); i {
+			switch v := v.(*UploadImageRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -357,7 +504,7 @@ func file_imgstorage_service_proto_init() {
 			}
 		}
 		file_imgstorage_service_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Img); i {
+			switch v := v.(*UploadImageResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -369,7 +516,7 @@ func file_imgstorage_service_proto_init() {
 			}
 		}
 		file_imgstorage_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NameImg); i {
+			switch v := v.(*DownloadImageRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -381,7 +528,7 @@ func file_imgstorage_service_proto_init() {
 			}
 		}
 		file_imgstorage_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InfImg); i {
+			switch v := v.(*DownloadImageResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -393,7 +540,31 @@ func file_imgstorage_service_proto_init() {
 			}
 		}
 		file_imgstorage_service_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListImg); i {
+			switch v := v.(*GetListImageRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_imgstorage_service_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ImageInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_imgstorage_service_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetListImageResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -405,13 +576,17 @@ func file_imgstorage_service_proto_init() {
 			}
 		}
 	}
+	file_imgstorage_service_proto_msgTypes[0].OneofWrappers = []interface{}{
+		(*UploadImageRequest_Name)(nil),
+		(*UploadImageRequest_ChunkData)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_imgstorage_service_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
