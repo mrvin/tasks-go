@@ -1,17 +1,25 @@
 package main
 
 import (
+	"bufio"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"text/tabwriter"
+	"time"
 
 	"github.com/mrvin/tasks-go/006-imgstorage/internal/imgstorageapi"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+const chunkSize = 64 * 1024 // 64 KiB
+const timeoutContext = 5 * time.Second
 
 type Client struct {
 	client imgstorageapi.ImgStorageClient
@@ -65,54 +73,110 @@ func main() {
 }
 
 func (c *Client) uploadImg(pathToFile string) error {
-	image, err := os.ReadFile(pathToFile)
+	ctx, cancel := context.WithTimeout(context.Background(), timeoutContext)
+	defer cancel()
+
+	stream, err := c.client.UploadImage(ctx)
 	if err != nil {
-		return fmt.Errorf("read image: %w", err)
+		return fmt.Errorf("get stream: %w", err)
 	}
 
 	fileName := filepath.Base(pathToFile)
-
-	req := &imgstorageapi.Img{Name: fileName, Img: image}
-
-	_, err = c.client.UploadImg(ctx, req)
-	if err != nil {
-		return fmt.Errorf("upload image: %w", err)
+	req := &imgstorageapi.UploadImageRequest{
+		Data: &imgstorageapi.UploadImageRequest_Name{ //nolint: nosnakecase
+			Name: fileName,
+		},
 	}
 
-	log.Printf("Upload image \"%s\"", fileName)
+	if err := stream.Send(req); err != nil {
+		return fmt.Errorf("send image name: %w", err)
+	}
+
+	fileImage, err := os.Open(pathToFile)
+	if err != nil {
+		return fmt.Errorf("open image file: %w", err)
+	}
+	defer fileImage.Close()
+
+	reader := bufio.NewReader(fileImage)
+	buffer := make([]byte, chunkSize)
+
+	for {
+		n, err := reader.Read(buffer)
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("read chunk to buffer: %w", err)
+		}
+
+		req := &imgstorageapi.UploadImageRequest{
+			Data: &imgstorageapi.UploadImageRequest_ChunkData{ //nolint: nosnakecase
+				ChunkData: buffer[:n],
+			},
+		}
+
+		if err = stream.Send(req); err != nil {
+			return fmt.Errorf("send chunk: %w", err)
+		}
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		return fmt.Errorf("close stream and receive response: %w", err)
+	}
+
+	log.Printf("Upload image \"%s\", %d byte", fileName, res.GetSize() /*, res.GetId()*/)
 
 	return nil
 }
 
 func (c *Client) downloadImg(fileName string) error {
-	req := &imgstorageapi.NameImg{Name: fileName}
+	ctx, cancel := context.WithTimeout(context.Background(), timeoutContext)
+	defer cancel()
 
-	pbImg, err := c.client.DownloadImg(ctx, req)
+	req := &imgstorageapi.DownloadImageRequest{Name: fileName}
+
+	stream, err := c.client.DownloadImage(ctx, req)
 	if err != nil {
-		return fmt.Errorf("download image: %w", err)
+		return fmt.Errorf("get stream and send request: %w", err)
 	}
 
-	fileImg, err := os.Create(fileName)
+	fileImage, err := os.Create(fileName)
 	if err != nil {
 		return fmt.Errorf("create image: %w", err)
 	}
+	defer fileImage.Close()
 
-	size, err := fileImg.Write(pbImg.Img)
+	imageSize := 0
+	for {
+		res, err := stream.Recv()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("receive chunk data: %w", err)
+		}
 
-	if closeErr := fileImg.Close(); err == nil {
-		err = closeErr
+		chunk := res.GetChunkData()
+
+		size, err := fileImage.Write(chunk)
+		if err != nil {
+			return fmt.Errorf("write chunk data: %w", err)
+		}
+
+		imageSize += size
 	}
-	if err == nil {
-		log.Printf("Image \"%s\" saved, %d bytes", fileName, size)
-	}
 
-	return err
+	log.Printf("Image \"%s\" saved, %d bytes", fileName, imageSize)
+
+	return nil
 }
 
 func (c *Client) getListImg() error {
-	req := &imgstorageapi.Null{}
+	req := &emptypb.Empty{}
 
-	pbListImg, err := c.client.GetListImg(ctx, req)
+	pbListImg, err := c.client.GetListImage(ctx, req)
 	if err != nil {
 		return fmt.Errorf("get list image: %w", err)
 	}
@@ -122,7 +186,7 @@ func (c *Client) getListImg() error {
 	fmt.Fprintf(tw, format, "File name", "Modified date")
 	fmt.Fprintf(tw, format, "---------", "-------------")
 
-	for _, infImg := range pbListImg.InfImg {
+	for _, infImg := range pbListImg.ImageInfo {
 		fmt.Fprintf(tw, format, infImg.Name, infImg.ModifiedAt.AsTime().Format("2 Jan 2006 15:04"))
 	}
 
