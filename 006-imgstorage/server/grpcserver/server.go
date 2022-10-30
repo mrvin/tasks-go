@@ -1,8 +1,11 @@
 package grpcserver
 
 import (
+	"bufio"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -10,6 +13,7 @@ import (
 
 	"github.com/mrvin/tasks-go/006-imgstorage/internal/imgstorageapi"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -18,6 +22,8 @@ const numGoroutinUploadDownload = 10
 
 // numGoroutinList - number of goroutines get list files.
 const numGoroutinList = 100
+
+const chunkSize = 64 * 1024 // 64 KiB
 
 type Config struct {
 	Host string `yaml:"host"`
@@ -68,47 +74,102 @@ func (s *Server) Stop() {
 	s.ln.Close()
 }
 
-func (s *Server) UploadImg(ctx context.Context, img *imgstorageapi.Img) (*imgstorageapi.Null, error) {
+func (s *Server) UploadImage(stream imgstorageapi.ImgStorage_UploadImageServer) error { //nolint: nosnakecase
 	s.semaUploadDownload <- struct{}{}        // acquire token
 	defer func() { <-s.semaUploadDownload }() // release token
 
-	name := img.Name
-	image := img.Img
+	req, err := stream.Recv()
+	if err != nil {
+		return fmt.Errorf("receive image name: %w", err)
+	}
+
+	name := req.GetName()
 
 	fileImg, err := os.Create(filepath.Join(s.dir, name))
 	if err != nil {
-		return nil, fmt.Errorf("create image: %w", err)
+		return fmt.Errorf("create image: %w", err)
+	}
+	defer fileImg.Close()
+
+	imageSize := 0
+	for {
+		if err := stream.Context().Err(); err != nil {
+			return fmt.Errorf("termination due to context: %w", err)
+		}
+		req, err := stream.Recv()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("receive chunk data: %w", err)
+		}
+
+		chunk := req.GetChunkData()
+
+		size, err := fileImg.Write(chunk)
+		if err != nil {
+			return fmt.Errorf("write chunk data: %w", err)
+		}
+		imageSize += size
 	}
 
-	size, err := fileImg.Write(image)
-
-	if closeErr := fileImg.Close(); err == nil {
-		err = closeErr
-	}
-	if err == nil {
-		log.Printf("Image \"%s\" upload, %d bytes", name, size)
+	res := &imgstorageapi.UploadImageResponse{
+		Size: uint32(imageSize),
 	}
 
-	return &imgstorageapi.Null{}, err
+	if err := stream.SendAndClose(res); err != nil {
+		return fmt.Errorf("send response and close stream: %w", err)
+	}
+
+	log.Printf("Image \"%s\" upload, %d bytes", name, imageSize)
+
+	return nil
 }
 
-func (s *Server) DownloadImg(ctx context.Context, nameImg *imgstorageapi.NameImg) (*imgstorageapi.Img, error) {
+func (s *Server) DownloadImage(nameImg *imgstorageapi.DownloadImageRequest, stream imgstorageapi.ImgStorage_DownloadImageServer) error { //nolint: nosnakecase
 	s.semaUploadDownload <- struct{}{}        // acquire token
 	defer func() { <-s.semaUploadDownload }() // release token
 
-	name := nameImg.Name
+	name := nameImg.GetName()
 
-	image, err := os.ReadFile(filepath.Join(s.dir, name))
+	fileImage, err := os.Open(filepath.Join(s.dir, name))
 	if err != nil {
-		return nil, fmt.Errorf("read image: %w", err)
+		return fmt.Errorf("open image file: %w", err)
+	}
+	defer fileImage.Close()
+
+	reader := bufio.NewReader(fileImage)
+	buffer := make([]byte, chunkSize)
+
+	imageSize := 0
+	for {
+		if err := stream.Context().Err(); err != nil {
+			return fmt.Errorf("termination due to context: %w", err)
+		}
+		size, err := reader.Read(buffer)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("read chunk to buffer: %w", err)
+		}
+
+		res := &imgstorageapi.DownloadImageResponse{
+			ChunkData: buffer[:size],
+		}
+
+		if err := stream.Send(res); err != nil {
+			return fmt.Errorf("send chunk: %w", err)
+		}
+		imageSize += size
 	}
 
-	log.Printf("Image \"%s\" download, %d bytes", name, len(image))
+	log.Printf("Image \"%s\" download, %d bytes", name, imageSize)
 
-	return &imgstorageapi.Img{Name: name, Img: image}, nil
+	return nil
 }
 
-func (s *Server) GetListImg(ctx context.Context, _ *imgstorageapi.Null) (*imgstorageapi.ListImg, error) {
+func (s *Server) GetListImage(ctx context.Context, _ *emptypb.Empty) (*imgstorageapi.GetListImageResponse, error) {
 	s.semaList <- struct{}{}        // acquire token
 	defer func() { <-s.semaList }() // release token
 
@@ -117,18 +178,18 @@ func (s *Server) GetListImg(ctx context.Context, _ *imgstorageapi.Null) (*imgsto
 		return nil, fmt.Errorf("reading a image directory: %w", err)
 	}
 
-	listImg := make([]*imgstorageapi.InfImg, 0, len(entries))
+	listImg := make([]*imgstorageapi.ImageInfo, 0, len(entries))
 	for _, entry := range entries {
 		if !entry.IsDir() {
 			info, err := entry.Info()
 			if err != nil {
 				return nil, fmt.Errorf("get information: %w", err)
 			}
-			listImg = append(listImg, &imgstorageapi.InfImg{Name: entry.Name(), ModifiedAt: timestamppb.New(info.ModTime())})
+			listImg = append(listImg, &imgstorageapi.ImageInfo{Name: entry.Name(), ModifiedAt: timestamppb.New(info.ModTime())})
 		}
 	}
 
 	log.Println("Get image list")
 
-	return &imgstorageapi.ListImg{InfImg: listImg}, nil
+	return &imgstorageapi.GetListImageResponse{ImageInfo: listImg}, nil
 }
