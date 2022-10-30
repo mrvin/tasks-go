@@ -59,3 +59,5 @@ File name    Modified date
 Cindy.jpg    20 Oct 2022 16:50
 Claudia.jpg  20 Oct 2022 16:51
 ```
+### Ссылки:
+- [Upload file in chunks with client-streaming gRPC - Go](https://dev.to/techschoolguru/upload-file-in-chunks-with-client-streaming-grpc-golang-4loc)
