@@ -8,6 +8,7 @@ package imgstorageapi
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -24,7 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ImgStorageClient interface {
 	UploadImage(ctx context.Context, opts ...grpc.CallOption) (ImgStorage_UploadImageClient, error)
 	DownloadImage(ctx context.Context, in *DownloadImageRequest, opts ...grpc.CallOption) (ImgStorage_DownloadImageClient, error)
-	GetListImage(ctx context.Context, in *GetListImageRequest, opts ...grpc.CallOption) (*GetListImageResponse, error)
+	GetListImage(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetListImageResponse, error)
 }
 
 type imgStorageClient struct {
@@ -101,7 +102,7 @@ func (x *imgStorageDownloadImageClient) Recv() (*DownloadImageResponse, error) {
 	return m, nil
 }
 
-func (c *imgStorageClient) GetListImage(ctx context.Context, in *GetListImageRequest, opts ...grpc.CallOption) (*GetListImageResponse, error) {
+func (c *imgStorageClient) GetListImage(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetListImageResponse, error) {
 	out := new(GetListImageResponse)
 	err := c.cc.Invoke(ctx, "/imgstorage.ImgStorage/GetListImage", in, out, opts...)
 	if err != nil {
@@ -116,7 +117,7 @@ func (c *imgStorageClient) GetListImage(ctx context.Context, in *GetListImageReq
 type ImgStorageServer interface {
 	UploadImage(ImgStorage_UploadImageServer) error
 	DownloadImage(*DownloadImageRequest, ImgStorage_DownloadImageServer) error
-	GetListImage(context.Context, *GetListImageRequest) (*GetListImageResponse, error)
+	GetListImage(context.Context, *empty.Empty) (*GetListImageResponse, error)
 }
 
 // UnimplementedImgStorageServer should be embedded to have forward compatible implementations.
@@ -129,7 +130,7 @@ func (UnimplementedImgStorageServer) UploadImage(ImgStorage_UploadImageServer) e
 func (UnimplementedImgStorageServer) DownloadImage(*DownloadImageRequest, ImgStorage_DownloadImageServer) error {
 	return status.Errorf(codes.Unimplemented, "method DownloadImage not implemented")
 }
-func (UnimplementedImgStorageServer) GetListImage(context.Context, *GetListImageRequest) (*GetListImageResponse, error) {
+func (UnimplementedImgStorageServer) GetListImage(context.Context, *empty.Empty) (*GetListImageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetListImage not implemented")
 }
 
@@ -192,7 +193,7 @@ func (x *imgStorageDownloadImageServer) Send(m *DownloadImageResponse) error {
 }
 
 func _ImgStorage_GetListImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetListImageRequest)
+	in := new(empty.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -204,7 +205,7 @@ func _ImgStorage_GetListImage_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/imgstorage.ImgStorage/GetListImage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ImgStorageServer).GetListImage(ctx, req.(*GetListImageRequest))
+		return srv.(ImgStorageServer).GetListImage(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -3,6 +3,7 @@ syntax = "proto3";
 package imgstorage;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "./;imgstorageapi";
 
@@ -14,8 +15,7 @@ message UploadImageRequest {
 }
 
 message UploadImageResponse {
-	string id = 1;
-	uint32 size = 2;
+	uint32 size = 1;
 }
 
 message DownloadImageRequest {
@@ -26,20 +26,18 @@ message DownloadImageResponse {
 	bytes chunk_data = 1;
 }
 
-message GetListImageRequest {};
-
 message ImageInfo {
 	string name = 1;
 	google.protobuf.Timestamp modifiedAt = 2;
 }
 
 message GetListImageResponse {
-	repeated ImageInfo infImg = 1;
+	repeated ImageInfo image_info = 1;
 }
 
 service ImgStorage {
 	rpc UploadImage (stream UploadImageRequest) returns (UploadImageResponse) {}
 	rpc DownloadImage (DownloadImageRequest) returns (stream DownloadImageResponse) {}
-	rpc GetListImage (GetListImageRequest) returns (GetListImageResponse) {}
+	rpc GetListImage (google.protobuf.Empty) returns (GetListImageResponse) {}
 }
 
