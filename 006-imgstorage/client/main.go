@@ -19,7 +19,7 @@ import (
 )
 
 const chunkSize = 64 * 1024 // 64 KiB
-const timeoutContext = 5 * time.Second
+const timeoutContext = 20 * time.Second
 
 type Client struct {
 	client imgstorageapi.ImgStorageClient
@@ -81,6 +81,12 @@ func (c *Client) uploadImg(pathToFile string) error {
 		return fmt.Errorf("get stream: %w", err)
 	}
 
+	fileImage, err := os.Open(pathToFile)
+	if err != nil {
+		return fmt.Errorf("open image file: %w", err)
+	}
+	defer fileImage.Close()
+
 	fileName := filepath.Base(pathToFile)
 	req := &imgstorageapi.UploadImageRequest{
 		Data: &imgstorageapi.UploadImageRequest_Name{ //nolint: nosnakecase
@@ -91,12 +97,6 @@ func (c *Client) uploadImg(pathToFile string) error {
 	if err := stream.Send(req); err != nil {
 		return fmt.Errorf("send image name: %w", err)
 	}
-
-	fileImage, err := os.Open(pathToFile)
-	if err != nil {
-		return fmt.Errorf("open image file: %w", err)
-	}
-	defer fileImage.Close()
 
 	reader := bufio.NewReader(fileImage)
 	buffer := make([]byte, chunkSize)
