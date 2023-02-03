@@ -1,14 +1,14 @@
 # GRPC settings
-hostGRPC: localhost
+hostGRPC: fibonacci
 portGRPC: 55555
 
 # HTTP settings
-hostHTTP: localhost
+hostHTTP: fibonacci
 portHTTP: 8080
 
 # Redis database settings
 db:
-    hostDB: 172.17.0.2
+    hostDB: redis
     portDB: 6379
     passwordDB:
     nameDB: 0
