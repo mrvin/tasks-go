@@ -49,3 +49,29 @@ func TestRomanToInt(t *testing.T) {
 		}
 	}
 }
+
+func TestIntToRoman(t *testing.T) {
+	var tests = []struct {
+		num  int
+		want string
+		err  error
+	}{
+		{10, "X", nil},
+		{9, "IX", nil},
+		{8, "VIII", nil},
+		{7, "VII", nil},
+		{6, "VI", nil},
+		{5, "V", nil},
+		{4, "IV", nil},
+		{3, "III", nil},
+		{2, "II", nil},
+		{1, "I", nil},
+		{0, "", ErrInvalidArabicNum},
+	}
+
+	for _, test := range tests {
+		if got, err := IntToRoman(test.num); err != test.err || got != test.want {
+			t.Errorf("RomanToInt(%d) = %q", test.num, got)
+		}
+	}
+}

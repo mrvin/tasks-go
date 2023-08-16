@@ -35,12 +35,30 @@
 числами могут быть только положительные числа, если результат работы
 меньше единицы, программа должна указать на исключение.
 
+#### Сборка
 ```shell script
 $ make build
 go build -o go-calc -ldflags '-w -s'
 ```
 
+#### Пример работы программы:
 ```shell script
 $ ./go-calc 1 + 2
 3
+$ ./go-calc 5 - 2
+3
+$ ./go-calc 3 \* 8
+24
+./go-calc 9 / 3
+3
+$ ./go-calc VI / III
+II
+$ ./go-calc I - II
+2023/08/16 15:43:49 go-calc: result invalid arabic number: -1
+$ ./go-calc I + 1
+2023/08/16 15:45:00 go-calc: different number systems
+$ ./go-calc 1
+2023/08/16 15:45:56 go-calc: not enough arguments < 3
+./go-calc 1 + 2 + 3
+2023/08/16 15:46:40 go-calc: too many arguments
 ```
