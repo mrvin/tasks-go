@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
-	"github.com/mrvin/tasks-go/calculator-kata-academy/calc"
+	"github.com/mrvin/tasks-go/go-calc/calc"
 )
 
 const (
@@ -15,28 +17,33 @@ const (
 )
 
 func main() {
-	if len(os.Args) > 4 {
-		log.Print("go-calc: too many arguments")
+	var expressionStr string
+	fmt.Print("Input: ")
+	expressionStr, err := bufio.NewReader(os.Stdin).ReadString('\n')
+	if err != nil {
+		log.Printf("go-calc: can't read string: %v", err)
 		return
 	}
-	if len(os.Args[1:]) != 3 {
-		log.Print("go-calc: not enough arguments < 3")
+	expressionSl := strings.Split(expressionStr[:len(expressionStr)-1], " ")
+
+	if len(expressionSl) != 3 {
+		log.Print("go-calc: should be 3 words")
 		return
 	}
 
 	var mode uint8
-	num1, err := strconv.Atoi(os.Args[1])
+	num1, err := strconv.Atoi(expressionSl[0])
 	if err != nil {
-		num1, err = calc.RomanToInt(os.Args[1])
+		num1, err = calc.RomanToInt(expressionSl[0])
 		if err != nil {
 			log.Printf("go-calc: can't convert: %v", err)
 			return
 		}
 		mode++
 	}
-	num2, err := strconv.Atoi(os.Args[3])
+	num2, err := strconv.Atoi(expressionSl[2])
 	if err != nil {
-		num2, err = calc.RomanToInt(os.Args[3])
+		num2, err = calc.RomanToInt(expressionSl[2])
 		if err != nil {
 			log.Printf("go-calc: can't convert: %v", err)
 			return
@@ -54,7 +61,7 @@ func main() {
 		return
 	}
 
-	result, err := calc.Calc(num1, num2, os.Args[2])
+	result, err := calc.Calc(num1, num2, expressionSl[1])
 	if err != nil {
 		log.Printf("go-calc: %v", err)
 		return
@@ -62,13 +69,13 @@ func main() {
 
 	switch mode {
 	case arabicMode:
-		fmt.Println(result)
+		fmt.Printf("result: %d\n", result)
 	case romanMode:
 		resultRoman, err := calc.IntToRoman(result)
 		if err != nil {
 			log.Printf("go-calc: result %v: %d", err, result)
 			return
 		}
-		fmt.Println(resultRoman)
+		fmt.Printf("result: %s\n", resultRoman)
 	}
 }

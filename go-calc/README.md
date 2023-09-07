@@ -40,25 +40,41 @@
 $ make build
 go build -o go-calc -ldflags '-w -s'
 ```
+#### Установка
+```shell script
+$ go install github.com/mrvin/go-calc
+```
 
 #### Пример работы программы:
 ```shell script
-$ ./go-calc 1 + 2
-3
-$ ./go-calc 5 - 2
-3
-$ ./go-calc 3 \* 8
-24
-./go-calc 9 / 3
-3
-$ ./go-calc VI / III
-II
-$ ./go-calc I - II
-2023/08/16 15:43:49 go-calc: result invalid arabic number: -1
-$ ./go-calc I + 1
-2023/08/16 15:45:00 go-calc: different number systems
-$ ./go-calc 1
-2023/08/16 15:45:56 go-calc: not enough arguments < 3
-./go-calc 1 + 2 + 3
-2023/08/16 15:46:40 go-calc: too many arguments
+$ ./go-calc
+Input: 1 + 2
+result: 3
+$ ./go-calc
+Input: 5 - 2
+result: 3
+$ ./go-calc
+Input: 3 * 8
+result: 24
+$ ./go-calc
+Input: 9 / 3
+result: 3
+$ ./go-calc
+Input: VI / III
+result: II
+$ ./go-calc
+Input: I - II
+2023/08/18 14:43:01 go-calc: result invalid arabic number: -1
+$ ./go-calc
+Input: I + 1
+2023/08/18 14:43:37 go-calc: different number systems
+$ ./go-calc
+Input: 1
+2023/08/18 14:44:17 go-calc: should be 3 words
+$ ./go-calc
+Input: 1 + 2 + 3
+2023/08/18 14:45:10 go-calc: should be 3 words
+$ ./go-calc
+Input: IX + IX
+result: XVIII
 ```
