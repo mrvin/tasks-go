@@ -57,7 +57,7 @@ func main() {
 		longestWord        string
 	)
 
-	dictionaryName := flag.String("f", "dictionary.txt", "dictionary path")
+	dictionaryName := flag.String("f", "/usr/share/dict/words", "dictionary path")
 	flag.Parse()
 	log.Printf("Dictionary path: %s", *dictionaryName)
 
