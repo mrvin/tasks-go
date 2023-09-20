@@ -1,4 +1,4 @@
-module github.com/mrvin/tasks-go/001-qwerty
+module github.com/mrvin/tasks-go/qwerty
 
 go 1.15
 
