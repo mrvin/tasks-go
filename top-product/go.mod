@@ -1,3 +1,3 @@
-module github.com/mrvin/tasks-go/005-topproduct
+module github.com/mrvin/tasks-go/top-product
 
 go 1.19
