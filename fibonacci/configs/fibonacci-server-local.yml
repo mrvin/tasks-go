@@ -1,0 +1,17 @@
+# GRPC server settings
+grpc:
+    host: localhost
+    port: 55555
+
+# HTTP server setting
+http:
+    host: localhost
+    port: 8080
+
+# Redis database settings
+db:
+    hostDB: redis
+    portDB: 6379
+    passwordDB:
+    nameDB: 0
+

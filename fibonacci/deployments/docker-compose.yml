@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+    fibonacci:
+        build:
+         context: ../
+         dockerfile: cmd/fibonacci-server/Dockerfile
+        ports:
+         - "8080:8080"
+         - "55555:55555"
+        links:
+         - redis
+        volumes:
+         - ./../configs/fibonacci-server.yml:/etc/calendar/fibonacci-server.yml
+    redis:
+        image: redis:7.2-alpine
