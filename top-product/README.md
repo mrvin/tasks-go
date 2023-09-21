@@ -10,10 +10,14 @@
 #### Сборка и запуск приложения в Docker
 
 ```shell script
-$ docker build -t top-product .
-$ docker run --rm --name top-product top-product
+$ make docker-build
+docker build -t top-product .
+....................
+....................
+$ make docker-run
+docker run --rm --name top-product top-product
 
-/topProduct -f testdata/db.json
+/top-product -f testdata/db.json
 Top Price:
 Name     Price  Rating
 ----     -----  ------
@@ -23,7 +27,7 @@ Top Rating:
 Name     Price  Rating
 ----     -----  ------
 Варенье  200    5
-/topProduct -f testdata/db.csv
+/top-product -f testdata/db.csv
 Top Price:
 Name     Price  Rating
 ----     -----  ------
