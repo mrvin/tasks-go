@@ -13,7 +13,7 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/mrvin/tasks-go/006-imgstorage/internal/imgstorageapi"
+	"github.com/mrvin/tasks-go/imgstorage/internal/imgstorageapi"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )

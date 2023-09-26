@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/mrvin/tasks-go/006-imgstorage/internal/config"
-	"github.com/mrvin/tasks-go/006-imgstorage/server/grpcserver"
+	"github.com/mrvin/tasks-go/imgstorage/internal/config"
+	"github.com/mrvin/tasks-go/imgstorage/internal/grpcserver"
 )
 
 func main() {

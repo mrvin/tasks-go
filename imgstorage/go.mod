@@ -1,4 +1,4 @@
-module github.com/mrvin/tasks-go/006-imgstorage
+module github.com/mrvin/tasks-go/imgstorage
 
 go 1.19
 

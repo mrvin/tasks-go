@@ -1,5 +1,5 @@
 build:
-	go build -o ../bin/server-imgstorage
+	go build -o ../../bin/server-imgstorage -ldflags '-w -s'
 
 run:
 	go run -race main.go -config ../configs/imgstorage.yml
