@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/mrvin/tasks-go/fibonacci/internal/fibonacci-api"
+	"github.com/mrvin/tasks-go/fibonacci/internal/fibonacciapi"
 	"google.golang.org/grpc"
 )
 

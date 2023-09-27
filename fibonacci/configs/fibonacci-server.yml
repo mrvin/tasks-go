@@ -10,8 +10,8 @@ http:
 
 # Redis database settings
 db:
-    hostDB: redis
-    portDB: 6379
-    passwordDB:
-    nameDB: 0
+    host: redis
+    port: 6379
+    password:
+    name: 0
 

@@ -8,7 +8,7 @@ import (
 
 	"github.com/mrvin/tasks-go/fibonacci/internal/cache"
 	"github.com/mrvin/tasks-go/fibonacci/internal/fibonacci"
-	"github.com/mrvin/tasks-go/fibonacci/internal/fibonacci-api"
+	"github.com/mrvin/tasks-go/fibonacci/internal/fibonacciapi"
 	"google.golang.org/grpc"
 )
 
@@ -24,14 +24,14 @@ type ServerGRPC struct {
 func (s *ServerGRPC) Run(conf *Conf, cacheFib cache.Cache) error {
 	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", conf.Host, conf.Port))
 	if err != nil {
-		return fmt.Errorf("сan't establish tcp connection: %v", err)
+		return fmt.Errorf("сan't establish tcp connection: %w", err)
 	}
 
 	s.cacheFib = cacheFib
 	grpcServ := grpc.NewServer()
 	fibonacciapi.RegisterFibServer(grpcServ, s)
 	if err := grpcServ.Serve(ln); err != nil {
-		return fmt.Errorf("сan't run grpc server: %v", err)
+		return fmt.Errorf("сan't run grpc server: %w", err)
 	}
 
 	return nil

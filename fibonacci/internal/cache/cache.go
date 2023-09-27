@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -11,10 +12,10 @@ import (
 var ctx = context.Background()
 
 type Conf struct {
-	Host     string `yaml:"hostDB"`
-	Port     int    `yaml:"portDB"`
-	Password string `yaml:"passwordDB"`
-	NameDB   int    `yaml:"nameDB"`
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	Password string `yaml:"password"`
+	NameDB   int    `yaml:"name"`
 }
 
 type CacheRDB struct {
@@ -42,7 +43,7 @@ func (c *CacheRDB) Connect(conf *Conf) error {
 	}
 
 	maxCachedNumStr, err := c.rdb.Get(ctx, "maxСachedNum").Result()
-	if err != redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		if err != nil {
 			return err
 		}
@@ -64,7 +65,7 @@ func (c *CacheRDB) GetFromCache(from, to uint64) ([]string, error) {
 	for i := from; i <= to; i++ {
 		val, err := c.rdb.Get(ctx, strconv.FormatUint(i, 10)).Result()
 		if err != nil {
-			return nil, fmt.Errorf("can't get from cache num %d: %v", i, err)
+			return nil, fmt.Errorf("can't get from cache num %d: %w", i, err)
 		}
 		slValFib = append(slValFib, val)
 	}
@@ -75,11 +76,11 @@ func (c *CacheRDB) GetFromCache(from, to uint64) ([]string, error) {
 func (c *CacheRDB) SetToCache(slValFib []string, from, to uint64) error {
 	for i := from; i <= to; i++ {
 		if err := c.rdb.Set(ctx, strconv.FormatUint(i, 10), slValFib[i-from], 0).Err(); err != nil {
-			return fmt.Errorf("can't set to cash num %d: %v", i, err)
+			return fmt.Errorf("can't set to cash num %d: %w", i, err)
 		}
 	}
 	if err := c.rdb.Set(ctx, "maxСachedNum", strconv.FormatUint(to, 10), 0).Err(); err != nil {
-		return fmt.Errorf("can't set to cash maxСachedNum: %v", err)
+		return fmt.Errorf("can't set to cash maxСachedNum: %w", err)
 	}
 	c.maxCachedNum = to
 

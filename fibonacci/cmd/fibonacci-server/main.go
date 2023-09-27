@@ -1,4 +1,4 @@
-//go:generate protoc -I=../../api/ --go_out=../../internal/fibonacci-api --go-grpc_out=require_unimplemented_servers=false:../../internal/fibonacci-api ../../api/fibonacci_service.proto
+//go:generate protoc -I=../../api/ --go_out=../../internal/fibonacciapi --go-grpc_out=require_unimplemented_servers=false:../../internal/fibonacciapi ../../api/fibonacci_service.proto
 package main
 
 import (
@@ -18,7 +18,7 @@ type Config struct {
 }
 
 func main() {
-	defer trace()()
+	log.Println("Start fibonacci server")
 
 	log.Println("Configuration...")
 	configFile := flag.String("config", "/etc/calendar/fibonacci-server.yml", "path to configuration file")
@@ -33,6 +33,7 @@ func main() {
 	if err := cacheFib.Connect(&conf.DB); err != nil {
 		log.Fatalf("fibserver: %v", err)
 	}
+	defer cacheFib.Close()
 
 	done := make(chan struct{})
 	go func() {
@@ -51,13 +52,6 @@ func main() {
 	}
 
 	<-done
-	cacheFib.Close()
-}
 
-func trace() func() {
-	log.Println("Start fibonacci server")
-
-	return func() {
-		log.Println("Stop fibonacci server")
-	}
+	log.Println("Stop fibonacci server")
 }

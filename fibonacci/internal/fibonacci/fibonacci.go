@@ -31,17 +31,17 @@ func GetFibNumbers(cacheFib cache.Cache, from, to uint64) ([]string, error) {
 		var err error
 		slValFib, err = cacheFib.GetFromCache(from, to)
 		if err != nil {
-			return nil, fmt.Errorf("can't get from cache [%d, %d]: %v", from, to, err)
+			return nil, fmt.Errorf("can't get from cache [%d, %d]: %w", from, to, err)
 		}
 	} else {
 		partLeftSlValFib, err := cacheFib.GetFromCache(0, maxCachedNums)
 		if err != nil {
-			return nil, fmt.Errorf("can't get from cache [%d, %d]: %v", 0, maxCachedNums, err)
+			return nil, fmt.Errorf("can't get from cache [%d, %d]: %w", 0, maxCachedNums, err)
 		}
 
 		partRightSlValFib := get(partLeftSlValFib[len(partLeftSlValFib)-2], partLeftSlValFib[len(partLeftSlValFib)-1], maxCachedNums, to)
 		if err := cacheFib.SetToCache(partRightSlValFib, maxCachedNums, to); err != nil {
-			return nil, fmt.Errorf("can't set to cache [%d, %d]: %v", maxCachedNums, to, err)
+			return nil, fmt.Errorf("can't set to cache [%d, %d]: %w", maxCachedNums, to, err)
 		}
 
 		slValFib = make([]string, to-from+1)
@@ -51,7 +51,6 @@ func GetFibNumbers(cacheFib cache.Cache, from, to uint64) ([]string, error) {
 		} else {
 			copy(slValFib, partRightSlValFib[from-1:])
 		}
-
 	}
 
 	return slValFib, nil
