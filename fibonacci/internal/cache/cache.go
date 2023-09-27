@@ -43,7 +43,7 @@ func (c *CacheRDB) Connect(conf *Conf) error {
 	}
 
 	maxCachedNumStr, err := c.rdb.Get(ctx, "maxСachedNum").Result()
-	if errors.Is(err, redis.Nil) {
+	if !errors.Is(err, redis.Nil) {
 		if err != nil {
 			return err
 		}
