@@ -1,7 +1,7 @@
 syntax = "proto3";
-package fib;
+package fibonacciapi;
 
-option go_package = "./;fibpb";
+option go_package = "./;fibonacciapi";
 
 service Fib {
 	rpc Get (Request) returns (Response) {}

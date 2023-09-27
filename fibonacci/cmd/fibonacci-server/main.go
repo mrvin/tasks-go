@@ -1,3 +1,4 @@
+//go:generate protoc -I=../../api/ --go_out=../../internal/fibonacci-api --go-grpc_out=require_unimplemented_servers=false:../../internal/fibonacci-api ../../api/fibonacci_service.proto
 package main
 
 import (

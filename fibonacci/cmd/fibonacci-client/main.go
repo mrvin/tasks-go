@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/mrvin/tasks-go/fibonacci/internal/fibpb"
+	"github.com/mrvin/tasks-go/fibonacci/internal/fibonacci-api"
 	"google.golang.org/grpc"
 )
 
@@ -38,9 +38,9 @@ func main() {
 		log.Fatalf("fibclient: %v", err)
 	}
 	defer conn.Close()
-	c := fibpb.NewFibClient(conn)
+	c := fibonacciapi.NewFibClient(conn)
 
-	req := &fibpb.Request{From: from, To: to}
+	req := &fibonacciapi.Request{From: from, To: to}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

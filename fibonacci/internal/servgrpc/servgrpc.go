@@ -8,7 +8,7 @@ import (
 
 	"github.com/mrvin/tasks-go/fibonacci/internal/cache"
 	"github.com/mrvin/tasks-go/fibonacci/internal/fibonacci"
-	"github.com/mrvin/tasks-go/fibonacci/internal/fibpb"
+	"github.com/mrvin/tasks-go/fibonacci/internal/fibonacci-api"
 	"google.golang.org/grpc"
 )
 
@@ -29,7 +29,7 @@ func (s *ServerGRPC) Run(conf *Conf, cacheFib cache.Cache) error {
 
 	s.cacheFib = cacheFib
 	grpcServ := grpc.NewServer()
-	fibpb.RegisterFibServer(grpcServ, s)
+	fibonacciapi.RegisterFibServer(grpcServ, s)
 	if err := grpcServ.Serve(ln); err != nil {
 		return fmt.Errorf("сan't run grpc server: %v", err)
 	}
@@ -37,8 +37,8 @@ func (s *ServerGRPC) Run(conf *Conf, cacheFib cache.Cache) error {
 	return nil
 }
 
-func (s *ServerGRPC) Get(ctx context.Context, req *fibpb.Request) (*fibpb.Response, error) {
-	response := make(chan *fibpb.Response)
+func (s *ServerGRPC) Get(ctx context.Context, req *fibonacciapi.Request) (*fibonacciapi.Response, error) {
+	response := make(chan *fibonacciapi.Response)
 
 	go func() {
 		from := req.GetFrom()
@@ -49,7 +49,7 @@ func (s *ServerGRPC) Get(ctx context.Context, req *fibpb.Request) (*fibpb.Respon
 			log.Printf("can't get fibonacci number: %v", err)
 		}
 
-		response <- &fibpb.Response{Numbers: slValFib}
+		response <- &fibonacciapi.Response{Numbers: slValFib}
 		close(response)
 	}()
 
