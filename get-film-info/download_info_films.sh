@@ -1,7 +1,7 @@
 #!/bin/bash
 
-get_film_inf="./get-film-inf"
-file_path_for_saving="movie_information_table.txt"
+get_film_info="./bin/get-film-info"
+file_path_for_saving="movie_information.json"
 
 reg_exp_year='^[0-9]{4}$'
 reg_exp_api_key='^[a-z0-9]{8}$'
@@ -36,9 +36,9 @@ do
   year="${line##*_}"
 
   if [[ $year =~ $reg_exp_year ]] ; then
-    $get_film_inf -k "$api_key" -n "$film" -y "$year" -f "$file_path_for_saving" -p 1>/dev/null
+    $get_film_info -k "$api_key" -n "$film" -y "$year" -f "$file_path_for_saving" -p 1>/dev/null
   else
-    $get_film_inf -k "$api_key" -n "$line" -f "$file_path_for_saving" -p 1>/dev/null
+    $get_film_info -k "$api_key" -n "$line" -f "$file_path_for_saving" -p 1>/dev/null
   fi
 done < "$input_file"
 
