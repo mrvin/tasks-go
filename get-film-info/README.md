@@ -6,10 +6,18 @@ Movie Database lets you search https://omdbapi.com/ for a movie by name
 and download its poster image. Write a tool poster that downloads the
 poster image for the movie named on the command line.
 
+#### Сборка
 ```shell script
 $ cd cmd/get-film-info/ && make build
 go build -o ../../bin/get-film-info -ldflags '-w -s'
 ```
+
+#### Установка
+```shell script
+$ go install github.com/mrvin/tasks-go/get-film-info/cmd/get-film-info@latest
+```
+
+#### Пример работы программы:
 ```shell script
 $  ./bin/get-film-info -help
 Usage of ./bin/get-film-info:
