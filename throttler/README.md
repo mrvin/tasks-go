@@ -1,4 +1,4 @@
-## throttler-обёртка
+## throttler-обёртка для типа Transport
 
 Реализовать throttler-обёртку для типа Transport из стандартной библиотеки
 [golang.org/pkg/net/http/#Transport](https://golang.org/pkg/net/http/#Transport).
@@ -51,3 +51,7 @@ resp, err:= client.Do(req) // throttling might be used
 resp, err:= client.GET("http://apidomain.com/servers/1337/status?simple=true") // no throttling
 // ...
 ```
+
+### Ссылки:
+- [Cloud Native Go - Throttle](https://github.com/cloud-native-go/examples/blob/main/ch04/throttle.go)
+- [Diving deep into net/http : A look at http.RoundTripper](https://lanre.wtf/blog/2017/07/24/roundtripper-go)

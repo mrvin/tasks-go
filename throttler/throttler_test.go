@@ -10,8 +10,12 @@ import (
 const googleURL = "https://www.google.com/"
 
 func TestThrottler(t *testing.T) {
-	throttled := NewThrottler(http.DefaultTransport, 2, 10*time.Second)
-
+	throttled := NewThrottler(
+		http.DefaultTransport,
+		2,
+		10*time.Second,
+		[]string{http.MethodGet}, // limit only GET requests
+	)
 	client := http.Client{
 		Transport: throttled,
 	}
