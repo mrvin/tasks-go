@@ -38,6 +38,14 @@
     - balance – дробное число, баланс кошелька
  - Статус ответа 404 если кошелек не найден
 
+### Сборка и запуск приложения в Docker Compose
+
+```shell script
+$ make build
+...............
+$ make up
+...............
+```
 ### Пример использования http API
 ```bash
 $ curl -i -X POST http://localhost:8088/api/v1/wallet
