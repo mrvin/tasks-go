@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+    e-wallet:
+        build:
+         context: ../
+         dockerfile: cmd/e-wallet-server/Dockerfile
+        ports:
+         - "8088:8088" # REST API
+        depends_on:
+          postgres:
+            condition: service_healthy
+        volumes:
+         - ./../configs/e-wallet.yml:/etc/e-wallet/e-wallet.yml
+
+    # Create service with PostgreSQL.
+    postgres:
+        image: postgres:15.2-alpine3.17
+        ports:
+         - "5432"
+        user: root
+        environment:
+         POSTGRES_PASSWORD: wallet-user
+         POSTGRES_USER: wallet-user
+         POSTGRES_DB: wallet-db
+        healthcheck:
+          test: ["CMD", "pg_isready", "-q", "-d", "wallet-db", "-U", "wallet-user"]
+        volumes:
+         - ${HOME}/volumes_docker/e-wallet/postgres-data:/var/lib/postgresql/data
+

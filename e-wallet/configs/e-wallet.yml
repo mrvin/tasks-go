@@ -1,0 +1,19 @@
+# HTTP server setting
+http:
+    host: e-wallet
+    port: 8088
+
+# database settings
+db:
+    driver: postgres
+    host: postgres
+    port: 5432
+    user: wallet-user
+    password: wallet-user
+    name: wallet-db
+
+# logging settings
+logger:
+    filepath:
+    level: debug # debug, info, warn, error
+
