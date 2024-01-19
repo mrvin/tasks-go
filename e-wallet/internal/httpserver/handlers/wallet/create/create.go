@@ -17,7 +17,7 @@ type WalletCreator interface {
 	Create(ctx context.Context, balance float64) (uuid.UUID, error)
 }
 
-type ResponseCreator struct {
+type ResponseCreate struct {
 	ID      uuid.UUID `json:"id"`
 	Balance float64   `json:"balance"`
 	Status  string    `json:"status"`
@@ -34,7 +34,7 @@ func New(creator WalletCreator) http.HandlerFunc {
 		}
 
 		// Write json response
-		response := ResponseCreator{
+		response := ResponseCreate{
 			ID:      id,
 			Balance: StartingBalance,
 			Status:  "OK",

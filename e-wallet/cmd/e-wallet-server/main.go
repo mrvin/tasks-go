@@ -69,6 +69,11 @@ func main() {
 			return
 		}
 	}()
-
 	wg.Wait()
+
+	if err := storage.Close(); err != nil {
+		slog.Error("Failed to close storage: " + err.Error())
+	} else {
+		slog.Info("Closing the database connection")
+	}
 }
