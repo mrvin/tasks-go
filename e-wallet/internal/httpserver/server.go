@@ -32,9 +32,9 @@ func New(conf *Conf, st storage.WalletStorage) *Server {
 
 	regexpUUID := "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
 	res.Add(http.MethodPost+" /api/v1/wallet$", createwallet.New(st))
-	res.Add(http.MethodPost+" /api/v1/wallet/"+regexpUUID+"/send", sendwallet.New(st))
-	res.Add(http.MethodGet+" /api/v1/wallet/"+regexpUUID+"/history", historywallet.New(st))
-	res.Add(http.MethodGet+" /api/v1/wallet/"+regexpUUID, balancewallet.New(st))
+	res.Add(http.MethodPost+" /api/v1/wallet/"+regexpUUID+"/send$", sendwallet.New(st))
+	res.Add(http.MethodGet+" /api/v1/wallet/"+regexpUUID+"/history$", historywallet.New(st))
+	res.Add(http.MethodGet+" /api/v1/wallet/"+regexpUUID+"$", balancewallet.New(st))
 
 	loggerServer := logger.Logger{Inner: &Router{res}}
 

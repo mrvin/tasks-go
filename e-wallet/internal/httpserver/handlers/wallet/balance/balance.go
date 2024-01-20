@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"github.com/google/uuid"
 	sqlstorage "github.com/mrvin/tasks-go/e-wallet/internal/storage/sql"
@@ -26,8 +25,7 @@ type ResponseBalance struct {
 
 func New(balanceGetter WalletBalance) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		strWalletID := strings.TrimPrefix(req.URL.Path, "/api/v1/wallet/")
-		fmt.Printf("\nstrWalletID: %s\n", strWalletID)
+		strWalletID := req.URL.Path[15:51]
 		walletID, err := uuid.Parse(strWalletID)
 		if err != nil {
 			err := fmt.Errorf("can't get parse uuid: %w", err)

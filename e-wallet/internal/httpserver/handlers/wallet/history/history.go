@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/mrvin/tasks-go/e-wallet/internal/storage"
@@ -26,9 +25,7 @@ type ResponseHistory struct {
 
 func New(historyGetter WalletHistory) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		strWalletID := strings.TrimPrefix(req.URL.Path, "/api/v1/wallet/")
-		strWalletID = strings.TrimSuffix(strWalletID, "/history")
-
+		strWalletID := req.URL.Path[15:51]
 		walletID, err := uuid.Parse(strWalletID)
 		if err != nil {
 			err := fmt.Errorf("can't get parse uuid: %w", err)
