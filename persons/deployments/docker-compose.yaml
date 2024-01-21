@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+    persons:
+        build:
+         context: ../
+         dockerfile: cmd/persons-server/Dockerfile
+        ports:
+         - "8088:8088" # REST API
+        depends_on:
+          postgres:
+            condition: service_healthy
+        volumes:
+         - ./../configs/persons.yml:/etc/persons/persons.yml
+
+    # Create service with PostgreSQL.
+    postgres:
+        image: postgres:15.2-alpine3.17
+        ports:
+         - "5432"
+        user: root
+        environment:
+         POSTGRES_PASSWORD: persons-user
+         POSTGRES_USER: persons-user
+         POSTGRES_DB: persons-db
+        healthcheck:
+          test: ["CMD", "pg_isready", "-q", "-d", "persons-db", "-U", "persons-user"]
+        volumes:
+         - ${HOME}/volumes_docker/persons/postgres-data:/var/lib/postgresql/data
+
