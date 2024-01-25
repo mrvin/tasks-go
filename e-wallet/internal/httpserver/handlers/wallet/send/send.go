@@ -74,7 +74,7 @@ func New(sender WalletSender) http.HandlerFunc {
 			return
 		}
 
-		res.WriteHeader(http.StatusOK)
+		httpresponse.WriteOK(res)
 
 		slog.Info("Transaction was successful")
 	}

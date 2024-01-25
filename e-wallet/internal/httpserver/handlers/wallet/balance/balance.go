@@ -14,7 +14,7 @@ import (
 )
 
 type WalletBalance interface {
-	Balance(ctx context.Context, wallet uuid.UUID) (float64, error)
+	Balance(ctx context.Context, walletID uuid.UUID) (float64, error)
 }
 
 type ResponseBalance struct {

@@ -15,7 +15,7 @@ import (
 )
 
 type WalletHistory interface {
-	HistoryTransactions(ctx context.Context, wallet uuid.UUID) ([]storage.Transaction, error)
+	HistoryTransactions(ctx context.Context, walletID uuid.UUID) ([]storage.Transaction, error)
 }
 
 type ResponseHistory struct {
