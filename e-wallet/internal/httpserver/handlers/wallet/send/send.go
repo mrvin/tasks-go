@@ -53,6 +53,14 @@ func New(sender WalletSender) http.HandlerFunc {
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
+
+		if request.Amount < 0.01 {
+			err := errors.New("amount is too small")
+			slog.Error(err.Error())
+			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		transaction := storage.Transaction{
 			WalletIDFrom: walletIDFrom,
 			WalletIDTo:   request.To,

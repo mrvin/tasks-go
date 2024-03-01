@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/mrvin/tasks-go/e-wallet/internal/storage"
@@ -14,7 +15,7 @@ var ErrNoWalletIDFrom = errors.New("no wallet-from with id")
 var ErrNoWalletIDTo = errors.New("no wallet-to with id")
 var ErrNotEnoughFunds = errors.New("not enough funds in wallet")
 
-func (s *Storage) Send(ctx context.Context, transaction storage.Transaction) error {
+func (s *Storage) SendOld(ctx context.Context, transaction storage.Transaction) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("start transaction: %w", err)
@@ -56,7 +57,7 @@ func (s *Storage) Send(ctx context.Context, transaction storage.Transaction) err
 	// Обновляем исходящий и целевой кошельки
 	sqlUpdateBalance := `
 		UPDATE wallets
-		SET balance = $2
+		SET balance = round(CAST($2 AS numeric), 2)
 		WHERE id = $1`
 	_, err = tx.ExecContext(
 		ctx,
@@ -100,6 +101,32 @@ func (s *Storage) Send(ctx context.Context, transaction storage.Transaction) err
 
 	if err = tx.Commit(); err != nil {
 		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Storage) Send(ctx context.Context, transaction storage.Transaction) error {
+	sqlSend := `
+	CALL transfer($1, $2, $3);`
+	if _, err := s.db.ExecContext(
+		ctx,
+		sqlSend,
+		transaction.WalletIDFrom,
+		transaction.WalletIDTo,
+		transaction.Amount,
+	); err != nil {
+		switch {
+		case strings.Contains(err.Error(), "not enough funds"):
+			return fmt.Errorf("%w: %w", ErrNotEnoughFunds, err)
+		case strings.Contains(err.Error(), transaction.WalletIDFrom.String()):
+			return fmt.Errorf("%w: %w", ErrNoWalletIDFrom, err)
+
+		case strings.Contains(err.Error(), transaction.WalletIDTo.String()):
+			return fmt.Errorf("%w: %w", ErrNoWalletIDTo, err)
+		default:
+			return fmt.Errorf("call send: %w", err)
+		}
 	}
 
 	return nil
