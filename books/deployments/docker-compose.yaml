@@ -7,9 +7,9 @@ services:
          dockerfile: cmd/books-server/Dockerfile
         ports:
          - "55555:55555" # gRPC API
-#        depends_on:
-#          mysql:
-#            condition: service_healthy
+        depends_on:
+          mysql:
+            condition: service_healthy
         volumes:
          - ./../configs/books.yml:/etc/books/books.yml
 
@@ -22,8 +22,8 @@ services:
         environment:
          MYSQL_ROOT_PASSWORD: password123
          MYSQL_DATABASE: books-db
-#        healthcheck:
-#         test: ["CMD-SHELL", "-U", "${POSTGRES_USER}", "pg_isready", "-d", "${POSTGRES_DB}"]
+        healthcheck:
+         test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
         volumes:
          - ${HOME}/volumes_docker/books/mysql-data:/var/lib/mysql
          - ./init.sql:/docker-entrypoint-initdb.d/init.sql
