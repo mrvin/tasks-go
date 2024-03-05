@@ -1,0 +1,18 @@
+# GRPC server setting
+grpc:
+    host: books
+    port: 55555
+
+# database settings
+db:
+    driver: mysql
+    host: mysql
+    port: 3306
+    user: root
+    password: password123
+    name: books-db
+
+# logging settings
+logger:
+    filepath:
+    level: debug # debug, info, warn, error
