@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/mrvin/tasks-go/books/internal/storage"
 )
 
@@ -42,12 +43,30 @@ func (s *Storage) CreateBook(ctx context.Context, book *storage.Book) error {
 			author.Name,
 		)
 		if err != nil {
-			return fmt.Errorf("create author: %w", err)
+			if errMySQL, ok := err.(*mysql.MySQLError); ok {
+				if errMySQL.Number == 1062 {
+					sqlGetIDAuthor := `
+					SELECT id FROM authors WHERE name = ?`
+					rows, _ := s.db.QueryContext(
+						ctx,
+						sqlGetIDAuthor,
+						author.Name,
+					)
+					defer rows.Close()
+					for rows.Next() {
+						_ = rows.Scan(&author.ID)
+					}
+				} else {
+					return fmt.Errorf("create author: %w", err)
+				}
+			}
+		} else {
+			author.ID, err = res.LastInsertId()
+			if err != nil {
+				return fmt.Errorf("last insert id book: %w", err)
+			}
 		}
-		author.ID, err = res.LastInsertId()
-		if err != nil {
-			return fmt.Errorf("last insert id book: %w", err)
-		}
+
 		sqlInsertBookAuthor := `
 		INSERT INTO book_author (
 			id_book,
