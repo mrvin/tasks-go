@@ -5,16 +5,15 @@ import (
 	"log/slog"
 
 	"github.com/mrvin/tasks-go/books/internal/booksapi"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (s *Server) ListBooksByAuthor(ctx context.Context, req *booksapi.Author) (*booksapi.ListBooks, error) {
-
-	books, err := s.st.ListBooksByAuthor(ctx, req.Author)
+func (s *Server) ListAllBooks(ctx context.Context, _ *emptypb.Empty) (*booksapi.ListBooks, error) {
+	books, err := s.st.ListAllBooks(ctx)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, err
 	}
-
 	pbBooks := make([]*booksapi.Book, len(books))
 
 	for i, book := range books {
@@ -23,8 +22,6 @@ func (s *Server) ListBooksByAuthor(ctx context.Context, req *booksapi.Author) (*
 			Authors: book.Authors,
 		}
 	}
-
-	slog.Info("Search by author was successful")
 
 	return &booksapi.ListBooks{Books: pbBooks}, nil
 }

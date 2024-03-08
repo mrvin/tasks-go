@@ -7,14 +7,15 @@ import (
 	"github.com/mrvin/tasks-go/books/internal/booksapi"
 )
 
-func (s *Server) GetAuthorsByTitle(ctx context.Context, req *booksapi.GetAuthorsByTitleRequest) (*booksapi.GetAuthorsByTitleResponse, error) {
+func (s *Server) GetBookByTitle(ctx context.Context, req *booksapi.Title) (*booksapi.Book, error) {
 
-	authors, err := s.st.GetAuthorsByTitle(ctx, req.GetTitle())
+	book, err := s.st.GetBookByTitle(ctx, req.GetTitle())
 	if err != nil {
+		slog.Error(err.Error())
 		return nil, err
 	}
 
 	slog.Info("Search by title was successful")
 
-	return &booksapi.GetAuthorsByTitleResponse{Authors: authors}, nil
+	return &booksapi.Book{Title: book.Title, Authors: book.Authors}, nil
 }
