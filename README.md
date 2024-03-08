@@ -6,8 +6,9 @@
 4. [throttler](./throttler) - throttler-обёртку для типа Transport из стандартной библиотеки;
 5. [top-product](./top-product) - чтение CSV и JSON файлов внутри Docker контейнера, табличный вывод результатов;
 6. [fibonacci](./fibonacci) - сервис расчета чисел Фибоначчи, API: REST HTTP, gRPC. Кэширование в Redis, Docker Compose;
-7. [imgstorage](./imgstorage) - cервис хранилище изображений, API: gRPC(streaming);
+7. [imgstorage](./imgstorage) - сервис хранилище изображений, API: gRPC(streaming);
 8. [url-shortener](./url-shortener) - сервис сокращатель URL-адресов, API: REST HTTP;
 9. [e-wallet](./e-wallet) - сервис электронный кошелек, API: REST HTTP, транзакции sql, PostgreSQL, Docker Compose;
-10. [persons](./persons) - сервис записная книга, API: REST HTTP, PostgreSQL, Docker Compose.
-11. [get-film-info-all](./003-get-film-info-all)
+10. [persons](./persons) - сервис записная книга, API: REST HTTP, PostgreSQL, Docker Compose;
+11. [books](./books) - сервис "книги", API: gRPC, MySQL(JOIN), Docker Compose.
+12. [get-film-info-all](./003-get-film-info-all)
