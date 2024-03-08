@@ -9,20 +9,17 @@ import (
 	"github.com/mrvin/tasks-go/books/internal/storage"
 )
 
-func (s *Storage) ListBooksByAuthor(ctx context.Context, author string) ([]*storage.Book, error) {
-	bookTitles := make([]string, 0)
-	sqlGetBooksByAuthor := `
-		SELECT b.title 
+func (s *Storage) ListAllBooks(ctx context.Context) ([]*storage.Book, error) {
+	sqlGetAllBooks := `
+		SELECT b.title, a.name
 		  FROM book_author AS r
 		  JOIN books AS b
 		    ON r.id_book = b.id
 		  JOIN authors AS a
-		    ON r.id_author = a.id
-		 WHERE a.name = ?`
+		    ON r.id_author = a.id`
 	rows, err := s.db.QueryContext(
 		ctx,
-		sqlGetBooksByAuthor,
-		author,
+		sqlGetAllBooks,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -33,26 +30,23 @@ func (s *Storage) ListBooksByAuthor(ctx context.Context, author string) ([]*stor
 	}
 	defer rows.Close()
 
+	mBooks := make(map[string][]string)
 	for rows.Next() {
-		var title string
-		err = rows.Scan(&title)
+		var bookTitle, bookAuthor string
+		err = rows.Scan(&bookTitle, &bookAuthor)
 		if err != nil {
 			return nil, fmt.Errorf("can't scan next row: %w", err)
 		}
-		bookTitles = append(bookTitles, title)
+		mBooks[bookTitle] = append(mBooks[bookTitle], bookAuthor)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows error: %w", err)
 	}
 
-	listBooks := make([]*storage.Book, 0)
-	for _, title := range bookTitles {
-		book, err := s.GetBookByTitle(ctx, title)
-		if err != nil {
-			return nil, fmt.Errorf("GetBookByTitle: %w")
-		}
-		listBooks = append(listBooks, book)
+	books := make([]*storage.Book, 0)
+	for title, authors := range mBooks {
+		books = append(books, &storage.Book{Title: title, Authors: authors})
 	}
 
-	return listBooks, nil
+	return books, nil
 }

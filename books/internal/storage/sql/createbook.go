@@ -27,12 +27,15 @@ func (s *Storage) CreateBook(ctx context.Context, book *storage.Book) error {
 	if err != nil {
 		return fmt.Errorf("create book: %w", err)
 	}
-	book.ID, err = res.LastInsertId()
+
+	bookID, err := res.LastInsertId()
 	if err != nil {
 		return fmt.Errorf("last insert id book: %w", err)
 	}
 
 	for _, author := range book.Authors {
+		var authorID int64
+
 		sqlInsertAuthor := `
 		INSERT INTO authors (
 			name
@@ -40,28 +43,18 @@ func (s *Storage) CreateBook(ctx context.Context, book *storage.Book) error {
 		res, err := tx.ExecContext(
 			ctx,
 			sqlInsertAuthor,
-			author.Name,
+			author,
 		)
 		if err != nil {
 			if errMySQL, ok := err.(*mysql.MySQLError); ok {
 				if errMySQL.Number == 1062 {
-					sqlGetIDAuthor := `
-					SELECT id FROM authors WHERE name = ?`
-					rows, _ := s.db.QueryContext(
-						ctx,
-						sqlGetIDAuthor,
-						author.Name,
-					)
-					defer rows.Close()
-					for rows.Next() {
-						_ = rows.Scan(&author.ID)
-					}
+					authorID = s.getIDAuthor(ctx, author)
 				} else {
 					return fmt.Errorf("create author: %w", err)
 				}
 			}
 		} else {
-			author.ID, err = res.LastInsertId()
+			authorID, err = res.LastInsertId()
 			if err != nil {
 				return fmt.Errorf("last insert id book: %w", err)
 			}
@@ -75,8 +68,8 @@ func (s *Storage) CreateBook(ctx context.Context, book *storage.Book) error {
 		if _, err := tx.ExecContext(
 			ctx,
 			sqlInsertBookAuthor,
-			book.ID,
-			author.ID,
+			bookID,
+			authorID,
 		); err != nil {
 			return fmt.Errorf("create book-author: %w", err)
 		}
@@ -87,4 +80,20 @@ func (s *Storage) CreateBook(ctx context.Context, book *storage.Book) error {
 	}
 
 	return nil
+}
+
+func (s *Storage) getIDAuthor(ctx context.Context, name string) int64 {
+	var authorID int64
+	sqlGetIDAuthor := `SELECT id FROM authors WHERE name = ?`
+	rows, _ := s.db.QueryContext(
+		ctx,
+		sqlGetIDAuthor,
+		name,
+	)
+	defer rows.Close()
+	for rows.Next() {
+		_ = rows.Scan(&authorID)
+	}
+
+	return authorID
 }
