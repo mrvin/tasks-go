@@ -6,30 +6,26 @@ import "google/protobuf/empty.proto";
 
 option go_package = ".;booksapi";
 
-message CreateBookRequest {
+message Book {
 	string title = 1;
 	repeated string authors = 2;
 }
 
-message GetBooksByAuthorRequest {
+message Author {
 	string author = 1;
 }
 
-message GetBooksByAuthorResponse {
-	repeated string titles = 1;
+message ListBooks {
+	repeated Book books = 1;
 }
 
-message GetAuthorsByTitleRequest {
+message Title {
 	string title = 1;
 }
 
-message GetAuthorsByTitleResponse {
-	repeated string authors = 1;
-}
-
 service BookService {
-	rpc CreateBook (CreateBookRequest) returns (google.protobuf.Empty) {}
-
-	rpc	GetBooksByAuthor(GetBooksByAuthorRequest) returns (GetBooksByAuthorResponse) {}
-	rpc GetAuthorsByTitle(GetAuthorsByTitleRequest) returns (GetAuthorsByTitleResponse) {}
+	rpc CreateBook (Book) returns (google.protobuf.Empty) {}
+	rpc GetBookByTitle(Title) returns (Book) {}
+	rpc ListBooksByAuthor(Author) returns (ListBooks) {}
+	rpc ListAllBooks(google.protobuf.Empty) returns (ListBooks) {}
 }
