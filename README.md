@@ -10,5 +10,6 @@
 8. [url-shortener](./url-shortener) - сервис сокращатель URL-адресов, API: REST HTTP;
 9. [e-wallet](./e-wallet) - сервис электронный кошелек, API: REST HTTP, транзакции sql, PostgreSQL, Docker Compose;
 10. [persons](./persons) - сервис записная книга, API: REST HTTP, PostgreSQL, Docker Compose;
-11. [books](./books) - сервис "книги", API: gRPC, MySQL(JOIN), Docker Compose.
-12. [get-film-info-all](./003-get-film-info-all)
+11. [books](./books) - сервис "книги", API: gRPC, MySQL(JOIN), Docker Compose;
+12. [identidock](./identidock) -  веб-приложение identidock, HTML form. Кэширование в Redis, Docker Compose;
+13. [get-film-info-all](./003-get-film-info-all)
