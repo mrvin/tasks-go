@@ -26,5 +26,5 @@ services:
          test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
         volumes:
          - ${HOME}/volumes_docker/books/mysql-data:/var/lib/mysql
-         - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+         - ./init_schema.sql:/docker-entrypoint-initdb.d/init.sql
 
