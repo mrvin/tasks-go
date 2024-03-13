@@ -1,0 +1,17 @@
+# HTTP server setting
+http:
+    host: localhost
+    port: 8088
+     # Directory for saving photos
+    dirPhotos: "./photos/"
+
+# database settings
+db:
+    driver: sqlite3
+    path: ./storage.db
+
+# logging settings
+logger:
+    filepath:
+    level: debug # debug, info, warn, error
+
