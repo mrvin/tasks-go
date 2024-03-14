@@ -12,7 +12,6 @@ import (
 	"github.com/mrvin/tasks-go/photo-gallery/internal/config"
 	"github.com/mrvin/tasks-go/photo-gallery/internal/httpserver"
 	"github.com/mrvin/tasks-go/photo-gallery/internal/logger"
-
 	sqlitestorage "github.com/mrvin/tasks-go/photo-gallery/internal/storage/sqlite"
 )
 
@@ -36,16 +35,15 @@ func main() {
 
 	logFile, err := logger.Init(&conf.Logger)
 	if err != nil {
-		log.Printf("Init logger: %v\n", err)
+		log.Printf("Init logger: %v", err)
 		return
-	} else {
-		slog.Info("Init logger", slog.String("Logging level", conf.Logger.Level))
-		defer func() {
-			if err := logFile.Close(); err != nil {
-				slog.Error("Close log file: " + err.Error())
-			}
-		}()
 	}
+	slog.Info("Init logger", slog.String("Logging level", conf.Logger.Level))
+	defer func() {
+		if err := logFile.Close(); err != nil {
+			slog.Error("Close log file: " + err.Error())
+		}
+	}()
 
 	slog.Info("Storage in sql database")
 	storage, err := sqlitestorage.New(ctx, &conf.DB)
@@ -53,6 +51,14 @@ func main() {
 		slog.Error("Failed to init storage: " + err.Error())
 		return
 	}
+	defer func() {
+		if err := storage.Close(); err != nil {
+			slog.Error("Failed to close storage: " + err.Error())
+		} else {
+			slog.Info("Closing the database connection")
+		}
+	}()
+
 	slog.Info("Connected to database")
 
 	if err := os.MkdirAll(conf.HTTP.DirPhotos, 0750); err != nil {
@@ -66,11 +72,5 @@ func main() {
 	if !errors.Is(err, http.ErrServerClosed) {
 		slog.Error("Failed to start http server: " + err.Error())
 		return
-	}
-
-	if err := storage.Close(); err != nil {
-		slog.Error("Failed to close storage: " + err.Error())
-	} else {
-		slog.Info("Closing the database connection")
 	}
 }
