@@ -12,4 +12,5 @@
 10. [persons](./persons) - сервис записная книга, API: REST HTTP, PostgreSQL, Docker Compose;
 11. [books](./books) - сервис "книги", API: gRPC, MySQL(JOIN), Docker Compose;
 12. [identidock](./identidock) -  веб-приложение identidock, HTML form. Кэширование в Redis, Docker Compose;
-13. [get-film-info-all](./003-get-film-info-all)
+13. [photo-gallery](./photo-gallery) - сервис фотогалерея, API: REST HTTP, SQLite.
+14. [get-film-info-all](./003-get-film-info-all)
