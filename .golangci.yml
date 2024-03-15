@@ -18,3 +18,11 @@ linters:
     - gomodguard
     - varnamelen
     - depguard
+    - nosnakecase
+    - deadcode
+    - varcheck
+    - structcheck
+    - golint
+    - scopelint
+    - exhaustivestruct
+    - maligned
