@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -50,19 +51,18 @@ func New(conf *Conf, st storage.PhotoStorage) *Server {
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Run(ctx context.Context) {
+	go func() {
+		if err := s.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("Failed to start http server: " + err.Error())
+		}
+	}()
 	slog.Info("Start http server: http://" + s.Addr)
-	if err := s.ListenAndServe(); err != nil {
-		return fmt.Errorf("start http server: %w", err)
-	}
-	return nil
-}
 
-func (s *Server) Stop(ctx context.Context) error {
-	slog.Info("Stop http server")
+	<-ctx.Done()
+
 	if err := s.Shutdown(ctx); err != nil {
-		return fmt.Errorf("stop http server: %w", err)
+		slog.Error("Failed to stop http server: " + err.Error())
 	}
-
-	return nil
+	slog.Info("Stop http server")
 }

@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"log"
 	"log/slog"
-	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/mrvin/tasks-go/photo-gallery/internal/config"
 	"github.com/mrvin/tasks-go/photo-gallery/internal/httpserver"
@@ -68,9 +68,8 @@ func main() {
 
 	serverHTTP := httpserver.New(&conf.HTTP, storage)
 
-	err = serverHTTP.Start()
-	if !errors.Is(err, http.ErrServerClosed) {
-		slog.Error("Failed to start http server: " + err.Error())
-		return
-	}
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT /*(Control-C)*/, syscall.SIGTERM, syscall.SIGQUIT)
+	defer cancel()
+
+	serverHTTP.Run(ctx)
 }

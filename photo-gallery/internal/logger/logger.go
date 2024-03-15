@@ -30,7 +30,7 @@ func Init(conf *Conf) (*os.File, error) {
 		}
 	}
 
-	replaceAttr := func(group []string, a slog.Attr) slog.Attr {
+	replaceAttr := func(_ []string, a slog.Attr) slog.Attr {
 		if a.Key == slog.TimeKey {
 			t := a.Value.Any().(time.Time) //nolint:forcetypeassert
 			a.Value = slog.StringValue(t.Format(time.StampNano))
