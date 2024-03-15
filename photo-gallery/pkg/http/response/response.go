@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func WriteOK(res http.ResponseWriter) {
+func WriteOK(res http.ResponseWriter, status int) {
 	response := struct {
 		Status string `json:"status"`
 	}{
@@ -15,16 +15,16 @@ func WriteOK(res http.ResponseWriter) {
 	}
 	jsonResponse, err := json.Marshal(&response)
 	if err != nil {
-		err := fmt.Errorf("WriteOK: marshal error: %w", err.Error())
+		err := fmt.Errorf("WriteOK: marshal error: %w", err)
 		slog.Error(err.Error())
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	res.Header().Set("Content-Type", "application/json")
-	res.WriteHeader(http.StatusOK)
+	res.WriteHeader(status)
 	if _, err := res.Write(jsonResponse); err != nil {
-		err := fmt.Errorf("WriteOK: write error: %w", err.Error())
+		err := fmt.Errorf("WriteOK: write error: %w", err)
 		slog.Error(err.Error())
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -42,7 +42,7 @@ func WriteError(res http.ResponseWriter, msgError string, status int) {
 
 	jsonResponse, err := json.Marshal(&response)
 	if err != nil {
-		err := fmt.Errorf("WriteError: marshal error: %w", err.Error())
+		err := fmt.Errorf("WriteError: marshal error: %w", err)
 		slog.Error(err.Error())
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -51,7 +51,7 @@ func WriteError(res http.ResponseWriter, msgError string, status int) {
 	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(status)
 	if _, err := res.Write(jsonResponse); err != nil {
-		err := fmt.Errorf("WriteError: write error: %w", err.Error())
+		err := fmt.Errorf("WriteError: write error: %w", err)
 		slog.Error(err.Error())
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return

@@ -1,3 +1,4 @@
+//nolint:stylecheck,predeclared
 package delete
 
 import (
@@ -37,7 +38,7 @@ func New(photoDeleter PhotoDeleter, dirPhotos string) http.HandlerFunc {
 		ext := filepath.Ext(namePhoto) // e.g., ".jpg", ".JPEG"
 		nameThumbnail := strings.TrimSuffix(namePhoto, ext) + ".thumb" + ext
 		if err := os.Remove(filepath.Join(dirPhotos, nameThumbnail)); err != nil {
-			err := fmt.Errorf("Delete photo: %w", err)
+			err := fmt.Errorf("Delete photo thumbnail: %w", err)
 			slog.Error(err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -50,7 +51,7 @@ func New(photoDeleter PhotoDeleter, dirPhotos string) http.HandlerFunc {
 			return
 		}
 
-		httpresponse.WriteOK(res)
+		httpresponse.WriteOK(res, http.StatusOK)
 
 		slog.Info("Photo removed", slog.String("name", namePhoto))
 	}

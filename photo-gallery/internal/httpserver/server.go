@@ -39,6 +39,7 @@ func New(conf *Conf, st storage.PhotoStorage) *Server {
 	loggerServer := logger.Logger{Inner: mux}
 
 	return &Server{
+		//nolint:exhaustruct
 		http.Server{
 			Addr:         addr,
 			Handler:      &loggerServer,

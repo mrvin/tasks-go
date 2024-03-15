@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	// Add Go SQLite driver for the database/sql package.
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mrvin/tasks-go/photo-gallery/internal/storage"
 )
@@ -136,5 +137,9 @@ func (s *Storage) ListPhotos(ctx context.Context) ([]storage.PhotoInfo, error) {
 }
 
 func (s *Storage) Close() error {
-	return s.db.Close()
+	s.insertPhoto.Close()
+	s.deletePhoto.Close()
+	s.listPhotos.Close()
+
+	return s.db.Close() //nolint:wrapcheck
 }

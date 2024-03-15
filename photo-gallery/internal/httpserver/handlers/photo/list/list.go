@@ -11,7 +11,7 @@ import (
 	httpresponse "github.com/mrvin/tasks-go/photo-gallery/pkg/http/response"
 )
 
-type ListPhotos interface {
+type PhotoLister interface {
 	ListPhotos(ctx context.Context) ([]storage.PhotoInfo, error)
 }
 
@@ -20,9 +20,9 @@ type ResponseListPhotos struct {
 	Status     string              `json:"status"`
 }
 
-func New(listPhotos ListPhotos) http.HandlerFunc {
+func New(photoLister PhotoLister) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		list, err := listPhotos.ListPhotos(req.Context())
+		list, err := photoLister.ListPhotos(req.Context())
 		if err != nil {
 			err := fmt.Errorf("get list photo info: %w", err)
 			slog.Error(err.Error())

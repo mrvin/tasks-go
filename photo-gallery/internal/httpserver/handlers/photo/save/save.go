@@ -1,8 +1,8 @@
+//nolint:stylecheck
 package save
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -18,10 +18,6 @@ import (
 
 type PhotoSaver interface {
 	SavePhoto(ctx context.Context, photoInfo *storage.PhotoInfo) error
-}
-
-type ResponseSave struct {
-	Status string `json:"status"`
 }
 
 func New(photoSaver PhotoSaver, dirPhotos, addr, path string) http.HandlerFunc {
@@ -75,27 +71,7 @@ func New(photoSaver PhotoSaver, dirPhotos, addr, path string) http.HandlerFunc {
 			return
 		}
 
-		// Write json response
-		response := ResponseSave{
-			Status: "OK",
-		}
-
-		jsonResponse, err := json.Marshal(&response)
-		if err != nil {
-			err := fmt.Errorf("Marshal response: %w", err)
-			slog.Error(err.Error())
-			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		res.Header().Set("Content-Type", "application/json")
-		res.WriteHeader(http.StatusCreated)
-		if _, err := res.Write(jsonResponse); err != nil {
-			err := fmt.Errorf("Write response: %w", err)
-			slog.Error(err.Error())
-			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		httpresponse.WriteOK(res, http.StatusCreated)
 
 		slog.Info("Photo upload", slog.String("name", namePhoto), slog.Int64("bytes", photoSize))
 	}
