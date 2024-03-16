@@ -63,6 +63,7 @@ func (s *Server) Run(ctx context.Context) {
 
 	if err := s.Shutdown(ctx); err != nil {
 		slog.Error("Failed to stop http server: " + err.Error())
+		return
 	}
 	slog.Info("Stop http server")
 }

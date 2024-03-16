@@ -12,6 +12,6 @@ db:
 
 # logging settings
 logger:
-    filepath:
+    filepath: ../logs/photo-gallery-log.json
     level: debug # debug, info, warn, error
 

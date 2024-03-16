@@ -68,7 +68,12 @@ func main() {
 
 	serverHTTP := httpserver.New(&conf.HTTP, storage)
 
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT /*(Control-C)*/, syscall.SIGTERM, syscall.SIGQUIT)
+	ctx, cancel := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,    // SIGINT, (Control-C)
+		syscall.SIGTERM, // systemd
+		syscall.SIGQUIT,
+	)
 	defer cancel()
 
 	serverHTTP.Run(ctx)
