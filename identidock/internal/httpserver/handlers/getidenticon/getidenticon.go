@@ -1,8 +1,10 @@
 package getidenticon
 
 import (
+	"context"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -18,48 +20,41 @@ func New(dnmonsterAddr string, cache *redis.Client) http.HandlerFunc {
 		name := req.URL.Query().Get("name")
 
 		imageStr, err := cache.Get(req.Context(), name).Result()
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			if err != nil {
 				slog.Error(err.Error())
 				return
 			}
-			fmt.Println("Get from cache")
+			slog.Info("Get from cache")
 			image = []byte(imageStr)
 		} else {
-			fmt.Println("Cache miss")
 			url := queryBuildDnmonster(name, 250, dnmonsterAddr)
+			slog.Info("Cache miss", slog.String("URL", url))
 
-			fmt.Printf("URL: %s\n", url)
-
-			resp, err := http.Get(url)
+			image, err = getImage(req.Context(), url)
 			if err != nil {
-				slog.Error("Get: " + err.Error())
+				slog.Error("Can't get image: " + err.Error())
 				return
 			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				slog.Error("Response status", slog.Int("code", resp.StatusCode), slog.String("url", url))
-				return
-			}
-			image, err = ioutil.ReadAll(resp.Body)
-			if err != nil {
-				slog.Error("ReadAll: " + err.Error())
-				return
-			}
-
 			if err := cache.Set(req.Context(), name, image, 0).Err(); err != nil {
-				slog.Error("can't set to cache val " + name + ":" + err.Error())
+				slog.Error("Can't set to cache val " + name + ":" + err.Error())
 				return
 			}
 		}
 
-		res.Write(image)
+		imageSize, err := res.Write(image)
+		if err != nil {
+			slog.Error("Can't write image: " + err.Error())
+			return
+		}
 		res.Header().Set("Content-Type", "image/png")
+
+		slog.Info("Image downloaded", slog.Int("bytes", imageSize))
 	}
 }
 
 func queryBuildDnmonster(name string, size int, confDnmonsterStr string) string {
+	//nolint:exhaustruct
 	query := url.URL{
 		Scheme: "http",
 		Host:   confDnmonsterStr,
@@ -77,4 +72,26 @@ func queryBuildDnmonster(name string, size int, confDnmonsterStr string) string 
 	query.RawQuery = val.Encode()
 
 	return query.String()
+}
+
+func getImage(ctx context.Context, url string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("http new request: %w", err)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http get: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("http response status code: %d", resp.StatusCode)
+	}
+	image, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read all http response body: %w", err)
+	}
+
+	return image, nil
 }
