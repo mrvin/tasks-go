@@ -43,7 +43,7 @@ var htmlForm = `<!DOCTYPE HTML>
 var tempForm = template.Must(template.New("htmlForm").Parse(htmlForm))
 
 func NewGet() http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
+	return func(res http.ResponseWriter, _ *http.Request) {
 		if err := tempForm.Execute(res, content); err != nil {
 			slog.Error(err.Error())
 			return
