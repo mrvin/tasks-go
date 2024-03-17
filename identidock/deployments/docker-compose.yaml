@@ -6,6 +6,8 @@ services:
          dockerfile: cmd/identidock/Dockerfile
         ports:
          - "8888:8888"
+        env_file:
+         - identidock.env
         depends_on:
          - dnmonster
          - redis
