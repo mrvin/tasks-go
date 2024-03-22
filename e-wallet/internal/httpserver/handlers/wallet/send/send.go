@@ -61,6 +61,7 @@ func New(sender WalletSender) http.HandlerFunc {
 			return
 		}
 
+		//nolint:exhaustruct
 		transaction := storage.Transaction{
 			WalletIDFrom: walletIDFrom,
 			WalletIDTo:   request.To,
@@ -82,7 +83,7 @@ func New(sender WalletSender) http.HandlerFunc {
 			return
 		}
 
-		httpresponse.WriteOK(res)
+		httpresponse.WriteOK(res, http.StatusOK)
 
 		slog.Info("Transaction was successful")
 	}

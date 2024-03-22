@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	// Add pure Go Postgres driver for the database/sql package.
 	_ "github.com/lib/pq"
 	"github.com/mrvin/tasks-go/e-wallet/pkg/retry"
 )
@@ -39,10 +40,6 @@ func New(ctx context.Context, conf *Conf) (*Storage, error) {
 
 	if err := st.RetryConnect(ctx, retriesConnect); err != nil {
 		return nil, fmt.Errorf("new database connection: %w", err)
-	}
-
-	if err := MigrationsUp(conf); err != nil {
-		return nil, fmt.Errorf("database migrations: %w", err)
 	}
 
 	if err := st.prepareQuery(ctx); err != nil {

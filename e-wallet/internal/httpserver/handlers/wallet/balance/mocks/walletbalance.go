@@ -12,7 +12,7 @@ type WalletBalance struct {
 }
 
 func NewWalletBalance() *WalletBalance {
-	return &WalletBalance{}
+	return new(WalletBalance)
 }
 
 func (m *WalletBalance) Balance(ctx context.Context, walletID uuid.UUID) (float64, error) {

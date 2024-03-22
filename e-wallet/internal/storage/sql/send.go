@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -20,7 +21,11 @@ func (s *Storage) SendOld(ctx context.Context, transaction storage.Transaction) 
 	if err != nil {
 		return fmt.Errorf("start transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			slog.Error("Failed Rollback" + err.Error())
+		}
+	}()
 
 	// Проверяем достаточно ли средств на исходящем кошельке
 	var balanceFrom float64
@@ -33,7 +38,7 @@ func (s *Storage) SendOld(ctx context.Context, transaction storage.Transaction) 
 		sqlGetBalance,
 		transaction.WalletIDFrom,
 	).Scan(&balanceFrom); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("get balance: %w %v", ErrNoWalletIDFrom, transaction.WalletIDFrom)
 		}
 		return fmt.Errorf("get balance: %w", err)
@@ -48,7 +53,7 @@ func (s *Storage) SendOld(ctx context.Context, transaction storage.Transaction) 
 		sqlGetBalance,
 		transaction.WalletIDTo,
 	).Scan(&balanceTo); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("get balance: %w %v", ErrNoWalletIDTo, transaction.WalletIDTo)
 		}
 		return fmt.Errorf("get balance: %w", err)

@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	createwallet "github.com/mrvin/tasks-go/e-wallet/internal/httpserver/handlers/wallet/create"
 	historywallet "github.com/mrvin/tasks-go/e-wallet/internal/httpserver/handlers/wallet/history"
 	sendwallet "github.com/mrvin/tasks-go/e-wallet/internal/httpserver/handlers/wallet/send"
-
 	"github.com/mrvin/tasks-go/e-wallet/internal/storage"
 	"github.com/mrvin/tasks-go/e-wallet/pkg/http/logger"
 	"github.com/mrvin/tasks-go/e-wallet/pkg/http/resolver"
@@ -31,14 +31,16 @@ func New(conf *Conf, st storage.WalletStorage) *Server {
 	res := regexresolver.New()
 
 	regexpUUID := "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
+	path := " /api/v1/wallet/"
 	res.Add(http.MethodPost+" /api/v1/wallet$", createwallet.New(st))
-	res.Add(http.MethodPost+" /api/v1/wallet/"+regexpUUID+"/send$", sendwallet.New(st))
-	res.Add(http.MethodGet+" /api/v1/wallet/"+regexpUUID+"/history$", historywallet.New(st))
-	res.Add(http.MethodGet+" /api/v1/wallet/"+regexpUUID+"$", balancewallet.New(st))
+	res.Add(http.MethodPost+path+regexpUUID+"/send$", sendwallet.New(st))
+	res.Add(http.MethodGet+path+regexpUUID+"/history$", historywallet.New(st))
+	res.Add(http.MethodGet+path+regexpUUID+"$", balancewallet.New(st))
 
 	loggerServer := logger.Logger{Inner: &Router{res}}
 
 	return &Server{
+		//nolint:exhaustruct
 		http.Server{
 			Addr:         fmt.Sprintf("%s:%d", conf.Host, conf.Port),
 			Handler:      &loggerServer,
@@ -49,21 +51,21 @@ func New(conf *Conf, st storage.WalletStorage) *Server {
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Run(ctx context.Context) {
+	go func() {
+		if err := s.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("Failed to start http server: " + err.Error())
+		}
+	}()
 	slog.Info("Start http server: http://" + s.Addr)
-	if err := s.ListenAndServe(); err != nil {
-		return fmt.Errorf("start http server: %w", err)
-	}
-	return nil
-}
 
-func (s *Server) Stop(ctx context.Context) error {
-	slog.Info("Stop http server")
+	<-ctx.Done()
+
 	if err := s.Shutdown(ctx); err != nil {
-		return fmt.Errorf("stop http server: %w", err)
+		slog.Error("Failed to stop http server: " + err.Error())
+		return
 	}
-
-	return nil
+	slog.Info("Stop http server")
 }
 
 type Router struct {

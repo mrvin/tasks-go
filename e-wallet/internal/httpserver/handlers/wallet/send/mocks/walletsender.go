@@ -12,7 +12,7 @@ type WalletSender struct {
 }
 
 func NewWalletSender() *WalletSender {
-	return &WalletSender{}
+	return new(WalletSender)
 }
 
 func (m *WalletSender) Send(ctx context.Context, transaction storage.Transaction) error {

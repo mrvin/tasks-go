@@ -1,9 +1,11 @@
 build:
-	docker-compose -f deployments/docker-compose.yaml build
+	docker compose -f deployments/docker-compose.yaml --env-file deployments/postgres.env build
 up:
-	docker-compose -f deployments/docker-compose.yaml up
+	docker compose -f deployments/docker-compose.yaml --env-file deployments/postgres.env up
 down:
-	docker-compose -f deployments/docker-compose.yaml down
+	docker compose -f deployments/docker-compose.yaml --env-file deployments/postgres.env down
+lint:
+	golangci-lint run ./...
 
-.PHONY: build up down
+.PHONY: build up down lint
 

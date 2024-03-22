@@ -7,10 +7,18 @@ services:
         ports:
          - "8088:8088" # REST API
         depends_on:
+         - migrate
+        volumes:
+         - ./../configs/e-wallet.yml:/etc/e-wallet/e-wallet.yml
+
+    migrate:
+        image: migrate/migrate:v4.17.0
+        command: ["-path", "/migrations", "-database",  "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable", "up"]
+        depends_on:
           postgres:
             condition: service_healthy
         volumes:
-         - ./../configs/e-wallet.yml:/etc/e-wallet/e-wallet.yml
+         - ./../migrations:/migrations
 
     # Create service with PostgreSQL.
     postgres:
@@ -18,12 +26,10 @@ services:
         ports:
          - "5432"
         user: root
-        environment:
-         POSTGRES_PASSWORD: wallet-user
-         POSTGRES_USER: wallet-user
-         POSTGRES_DB: wallet-db
+        env_file:
+         - postgres.env
         healthcheck:
-          test: ["CMD", "pg_isready", "-q", "-d", "wallet-db", "-U", "wallet-user"]
+          test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
         volumes:
          - ${HOME}/volumes_docker/e-wallet/postgres-data:/var/lib/postgresql/data
 

@@ -12,7 +12,7 @@ type WalletCreator struct {
 }
 
 func NewWalletCreator() *WalletCreator {
-	return &WalletCreator{}
+	return new(WalletCreator)
 }
 
 func (m *WalletCreator) Create(ctx context.Context, balance float64) (uuid.UUID, error) {

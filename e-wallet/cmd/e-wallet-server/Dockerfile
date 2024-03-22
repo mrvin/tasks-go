@@ -5,7 +5,7 @@ MAINTAINER mrvin <v.v.vinogradovv@gmail.com>
 
 RUN apk add --update make
 
-WORKDIR  /app
+WORKDIR /app
 
 # Copy the code into the container.
 COPY cmd/e-wallet-server cmd/e-wallet-server

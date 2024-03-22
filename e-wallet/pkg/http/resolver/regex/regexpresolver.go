@@ -6,24 +6,24 @@ import (
 )
 
 // RegexpResolver is not thread safe.
-type RegexpResolver struct {
+type Resolver struct {
 	handlers map[string]http.HandlerFunc
 	cache    map[string]*regexp.Regexp
 }
 
-func New() *RegexpResolver {
-	return &RegexpResolver{
+func New() *Resolver {
+	return &Resolver{
 		handlers: make(map[string]http.HandlerFunc),
 		cache:    make(map[string]*regexp.Regexp),
 	}
 }
 
-func (r *RegexpResolver) Add(regex string, handler http.HandlerFunc) {
+func (r *Resolver) Add(regex string, handler http.HandlerFunc) {
 	r.handlers[regex] = handler
 	r.cache[regex] = regexp.MustCompile(regex)
 }
 
-func (r *RegexpResolver) Get(pathCheck string) http.HandlerFunc {
+func (r *Resolver) Get(pathCheck string) http.HandlerFunc {
 	for pattern, handlerFunc := range r.handlers {
 		if r.cache[pattern].MatchString(pathCheck) {
 			return handlerFunc

@@ -13,7 +13,7 @@ type WalletHistory struct {
 }
 
 func NewWalletHistory() *WalletHistory {
-	return &WalletHistory{}
+	return new(WalletHistory)
 }
 
 func (m *WalletHistory) HistoryTransactions(ctx context.Context, walletID uuid.UUID) ([]storage.Transaction, error) {

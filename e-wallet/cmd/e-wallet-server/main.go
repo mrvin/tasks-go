@@ -2,17 +2,16 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
-	stdlog "log"
+	"log"
 	"log/slog"
-	"net/http"
-	"sync"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/mrvin/tasks-go/e-wallet/internal/config"
 	"github.com/mrvin/tasks-go/e-wallet/internal/httpserver"
 	"github.com/mrvin/tasks-go/e-wallet/internal/logger"
-
 	sqlstorage "github.com/mrvin/tasks-go/e-wallet/internal/storage/sql"
 )
 
@@ -30,22 +29,21 @@ func main() {
 
 	var conf Config
 	if err := config.Parse(*configFile, &conf); err != nil {
-		stdlog.Printf("Parse config: %v", err)
+		log.Printf("Parse config: %v", err)
 		return
 	}
 
 	logFile, err := logger.Init(&conf.Logger)
 	if err != nil {
-		stdlog.Printf("Init logger: %v\n", err)
+		log.Printf("Init logger: %v\n", err)
 		return
-	} else {
-		slog.Info("Init logger", slog.String("Logging level", conf.Logger.Level))
-		defer func() {
-			if err := logFile.Close(); err != nil {
-				slog.Error("Close log file: " + err.Error())
-			}
-		}()
 	}
+	slog.Info("Init logger", slog.String("Logging level", conf.Logger.Level))
+	defer func() {
+		if err := logFile.Close(); err != nil {
+			slog.Error("Close log file: " + err.Error())
+		}
+	}()
 
 	slog.Info("Storage in sql database")
 	storage, err := sqlstorage.New(ctx, &conf.DB)
@@ -54,26 +52,23 @@ func main() {
 		return
 	}
 	slog.Info("Connected to database")
+	defer func() {
+		if err := storage.Close(); err != nil {
+			slog.Error("Failed to close storage: " + err.Error())
+		} else {
+			slog.Info("Closing the database connection")
+		}
+	}()
 
 	serverHTTP := httpserver.New(&conf.HTTP, storage)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	ctx, cancel := signal.NotifyContext(
+		ctx,
+		os.Interrupt,    // SIGINT, (Control-C)
+		syscall.SIGTERM, // systemd
+		syscall.SIGQUIT,
+	)
+	defer cancel()
 
-		var err error
-		err = serverHTTP.Start()
-		if !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("Failed to start http server: " + err.Error())
-			return
-		}
-	}()
-	wg.Wait()
-
-	if err := storage.Close(); err != nil {
-		slog.Error("Failed to close storage: " + err.Error())
-	} else {
-		slog.Info("Closing the database connection")
-	}
+	serverHTTP.Run(ctx)
 }
