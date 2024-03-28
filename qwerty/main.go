@@ -65,7 +65,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error (os.Open) %s\n", err)
 	}
-	defer closeFile(dictionaryFile)
+	defer func() {
+		if err := dictionaryFile.Close(); err != nil {
+			log.Printf("Error (f.Close) %v\n", err)
+		}
+	}()
 
 	start := time.Now()
 
@@ -74,7 +78,7 @@ func main() {
 		word := strings.ToLower(input.Text())
 		if isLetter(&word) {
 			if checkQwertyWord(&word) {
-				fmt.Println(word)
+				fmt.Println(word) //nolint:forbidigo
 				countSearchedWords++
 				currentLen := len(word)
 				if currentLen > maxLenWord {
@@ -87,15 +91,16 @@ func main() {
 		}
 	}
 	if input.Err() != nil {
-		log.Fatalf("Error (input.Err) %v\n", input.Err())
+		log.Printf("Error (input.Err) %v\n", input.Err())
+		return
 	}
 
 	executionTime := time.Since(start)
 
-	fmt.Printf("Number of searched word: %v\n", countSearchedWords)
-	fmt.Printf("Max length of the searched word: %v\n", maxLenWord)
-	fmt.Printf("Max length searched word: %s\n", longestWord)
-	fmt.Printf("Execution time: %v s\n", executionTime.Seconds())
+	fmt.Printf("Number of searched word: %v\n", countSearchedWords) //nolint:forbidigo
+	fmt.Printf("Max length of the searched word: %v\n", maxLenWord) //nolint:forbidigo
+	fmt.Printf("Max length searched word: %s\n", longestWord)       //nolint:forbidigo
+	fmt.Printf("Execution time: %v s\n", executionTime.Seconds())   //nolint:forbidigo
 }
 
 // checkQwertyWord checks can be typed on the keyboard (QWERTY) by moving along
@@ -127,11 +132,4 @@ func isLetter(str *string) bool {
 	}
 
 	return true
-}
-
-func closeFile(f *os.File) {
-	err := f.Close()
-	if err != nil {
-		log.Fatalf("Error (f.Close) %v\n", err)
-	}
 }
