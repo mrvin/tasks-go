@@ -16,9 +16,10 @@ const (
 	romanMode  uint8 = 2
 )
 
+//nolint:cyclop
 func main() {
 	var expressionStr string
-	fmt.Print("Input: ")
+	fmt.Print("Input: ") //nolint:forbidigo
 	expressionStr, err := bufio.NewReader(os.Stdin).ReadString('\n')
 	if err != nil {
 		log.Printf("go-calc: can't read string: %v", err)
@@ -69,13 +70,13 @@ func main() {
 
 	switch mode {
 	case arabicMode:
-		fmt.Printf("result: %d\n", result)
+		fmt.Printf("result: %d\n", result) //nolint:forbidigo
 	case romanMode:
 		resultRoman, err := calc.IntToRoman(result)
 		if err != nil {
 			log.Printf("go-calc: result %v: %d", err, result)
 			return
 		}
-		fmt.Printf("result: %s\n", resultRoman)
+		fmt.Printf("result: %s\n", resultRoman) //nolint:forbidigo
 	}
 }

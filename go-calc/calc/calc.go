@@ -14,7 +14,6 @@ var (
 )
 
 var romanToInt = make(map[string]int)
-var intToRoman = make(map[int]string)
 
 func init() {
 	romanToInt = map[string]int{
