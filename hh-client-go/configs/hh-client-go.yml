@@ -1,0 +1,15 @@
+# Authorization hh api
+auth_hh:
+    client_id: "client_id"
+    client_secret: "client_secret"
+    authorization_code: "authorization_code"
+
+# HTTP client setting
+http:
+    cert_file: ../cert/clientCert.pem
+    key_file: ../cert/clientKey.pem
+
+# logging settings
+logger:
+    filepath: ../logs/hh-client-go-log.json
+    level: debug # debug, info, warn, error
