@@ -5,7 +5,7 @@ linters:
   disable-all: false
   enable-all: true
   disable:
-    - goerr113
+    - err113
     - gochecknoglobals
     - gochecknoinits
     - godox
@@ -18,11 +18,4 @@ linters:
     - gomodguard
     - varnamelen
     - depguard
-    - nosnakecase
-    - deadcode
-    - varcheck
-    - structcheck
-    - golint
-    - scopelint
-    - exhaustivestruct
-    - maligned
+
