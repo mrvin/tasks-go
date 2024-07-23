@@ -14,6 +14,7 @@ import (
 	"github.com/mrvin/tasks-go/hh-client-go/internal/logger"
 )
 
+//nolint:tagliatelle
 type Config struct {
 	AuthHH clienthttp.ConfAPIhh `yaml:"auth_hh"`
 	HTTP   clienthttp.Conf      `yaml:"http"`
@@ -74,7 +75,7 @@ func main() {
 	}
 
 	durationBeforeStart := durationBeforeStartAutoUpdateResumes()
-	slog.Info("Auto update will start", slog.Duration("duration", durationBeforeStart))
+	slog.Info("Auto update will start", slog.String("duration", durationBeforeStart.String()))
 	time.AfterFunc(durationBeforeStart, funcAutoUpdateResumes)
 
 	<-chDoneAutoUpdateResumes
@@ -88,21 +89,16 @@ func durationBeforeStartAutoUpdateResumes() time.Duration {
 	year, month, day := timeNow.Date()
 
 	hour := timeNow.Hour()
-	switch {
-	case hour < 2:
-		timeStartAutoUpdateResumes = time.Date(year, month, day, 2, 0, 0, 0, timeNow.Location())
-	case hour < 6:
-		timeStartAutoUpdateResumes = time.Date(year, month, day, 6, 0, 0, 0, timeNow.Location())
-	case hour < 10:
-		timeStartAutoUpdateResumes = time.Date(year, month, day, 10, 0, 0, 0, timeNow.Location())
-	case hour < 14:
-		timeStartAutoUpdateResumes = time.Date(year, month, day, 14, 0, 0, 0, timeNow.Location())
-	case hour < 18:
-		timeStartAutoUpdateResumes = time.Date(year, month, day, 18, 0, 0, 0, timeNow.Location())
-	case hour < 22:
-		timeStartAutoUpdateResumes = time.Date(year, month, day, 22, 0, 0, 0, timeNow.Location())
-	case hour < 24:
-		timeStartAutoUpdateResumes = time.Date(year, month, day+1, 2, 0, 0, 0, timeNow.Location())
+	hours := [...]int{6, 10, 14, 18, 22}
+
+	for _, h := range hours {
+		if hour < h {
+			timeStartAutoUpdateResumes = time.Date(year, month, day, h, 0, 0, 0, timeNow.Location())
+			break
+		}
+	}
+	if hour >= hours[len(hours)-1] {
+		timeStartAutoUpdateResumes = time.Date(year, month, day+1, hours[0], 0, 0, 0, timeNow.Location())
 	}
 
 	return timeStartAutoUpdateResumes.Sub(timeNow)

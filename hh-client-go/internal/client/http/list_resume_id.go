@@ -28,18 +28,18 @@ func (c *Client) ListResumeID(ctx context.Context) ([]string, error) {
 	// Create a new request using http
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create request: %w", err)
 	}
 
 	bearer := "Bearer " + c.userAuth.accessToken
 	req.Header.Add("Authorization", bearer)
-	req.Header.Add("HH-User-Agent", c.hhUserAgent)
+	req.Header.Add("HH-User-Agent", c.hhUserAgent) //nolint:canonicalheader
 
-	slog.Info("Get list resume id: ", slog.String("url", requestURL))
+	slog.Info("Get list resume id", slog.String("url", requestURL))
 
 	resp, err := c.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("send request: %w", err)
 	}
 	defer resp.Body.Close()
 

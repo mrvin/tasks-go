@@ -4,18 +4,19 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-
 	"net/http"
 )
 
 const requestTimeout = 10
 
+//nolint:tagliatelle
 type ConfAPIhh struct {
 	ClientID          string `yaml:"client_id"`
 	ClientSecret      string `yaml:"client_secret"`
 	AuthorizationCode string `yaml:"authorization_code"`
 }
 
+//nolint:tagliatelle
 type Conf struct {
 	ClientCrt string `yaml:"cert_file"`
 	ClientKey string `yaml:"key_file"`
@@ -37,10 +38,11 @@ func New(ctx context.Context, conf *Conf, confHH *ConfAPIhh, appInfo *AppInfo) (
 	var client Client
 	cert, err := tls.LoadX509KeyPair(conf.ClientCrt, conf.ClientKey)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("load x509 key pair: %w", err)
 	}
 	tlsConf := &tls.Config{
 		Certificates: []tls.Certificate{cert},
+		MinVersion:   tls.VersionTLS12,
 	}
 
 	transport := &http.Transport{

@@ -1,0 +1,8 @@
+[Unit]
+Description=Automatic resume update on the website https://hh.ru/
+After=network.target
+
+[Service]
+User=mrvin
+ExecStart=/usr/local/bin/hh-client-go -config /etc/hh-client-go/hh-client-go.yml
+Restart=on-failure
