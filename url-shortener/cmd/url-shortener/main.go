@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/mrvin/tasks-go/url-shortener/internal/app"
 	"github.com/mrvin/tasks-go/url-shortener/internal/config"
 	"github.com/mrvin/tasks-go/url-shortener/internal/httpserver"
 	"github.com/mrvin/tasks-go/url-shortener/internal/logger"
@@ -22,6 +21,7 @@ type Config struct {
 }
 
 func main() {
+	ctx := context.Background()
 	configFile := flag.String("config", "/etc/url-shortener/url-shortener.yml", "path to configuration file")
 	flag.Parse()
 
@@ -37,24 +37,24 @@ func main() {
 	if err != nil {
 		stdlog.Printf("Init logger: %v\n", err)
 		return
-	} else {
-		slog.Info("Init logger", slog.String("level", conf.Logger.Level))
-		defer func() {
-			if err := logFile.Close(); err != nil {
-				slog.Error("Close log file: " + err.Error())
-			}
-		}()
 	}
+	slog.Info("Init logger", slog.String("level", conf.Logger.Level))
+	defer func() {
+		if err := logFile.Close(); err != nil {
+			slog.Error("Close log file: " + err.Error())
+		}
+	}()
+
 	// init storage
-	st, err := sqlstorage.New(context.Background(), &conf.DB)
+	st, err := sqlstorage.New(ctx, &conf.DB)
 	if err != nil {
 		slog.Error("Failed to init storage: " + err.Error())
 		return
 	}
-	slog.Info("Connected to database", slog.String("driver", conf.DB.Driver))
+	slog.Info("Connected to database")
 
 	// Start server
-	server := httpserver.New(&conf.HTTP, app.New(st))
+	server := httpserver.New(&conf.HTTP, st)
 
 	if err := server.Start(); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {

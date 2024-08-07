@@ -1,12 +1,6 @@
 # database settings
 db:
-    driver: "sqlite3"
-    path: ./storage.db
-    host:
-    port:
-    user:
-    password:
-    name:
+    path: /data/storage.db
 
 # HTTP server setting
 http:

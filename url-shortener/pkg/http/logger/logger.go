@@ -2,44 +2,58 @@ package logger
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
-	"sync/atomic"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-type loggingResponseWriter struct {
+type requestID string
+
+const RequestIDKey = requestID("requestID")
+
+type LoggingResponseWriter struct {
 	http.ResponseWriter
 	statusCode    int
 	totalWritByte int
 }
 
-func NewLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
-	return &loggingResponseWriter{w, http.StatusOK, 0}
+func NewLoggingResponseWriter(w http.ResponseWriter) *LoggingResponseWriter {
+	return &LoggingResponseWriter{w, http.StatusOK, 0}
 }
 
-func (lrw *loggingResponseWriter) WriteHeader(code int) {
+func (lrw *LoggingResponseWriter) WriteHeader(code int) {
 	lrw.statusCode = code
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
-func (lrw *loggingResponseWriter) Write(slByte []byte) (writeByte int, err error) {
-	writeByte, err = lrw.ResponseWriter.Write(slByte)
+func (lrw *LoggingResponseWriter) Write(slByte []byte) (int, error) {
+	writeByte, err := lrw.ResponseWriter.Write(slByte)
 	lrw.totalWritByte += writeByte
-	return
+
+	return writeByte, err //nolint:wrapcheck
 }
 
-const RequestIDKey = "requestID"
+func GetRequestID(ctx context.Context) string {
+	if ctx == nil {
+		slog.Warn("GetRequestID: ctx is nil")
+		return ""
+	}
+	if requestID, ok := ctx.Value(RequestIDKey).(string); ok {
+		return requestID
+	}
+	slog.Warn("GetRequestID: no request id in ctx")
+
+	return ""
+}
 
 type Logger struct {
-	reqid uint64
 	Inner http.Handler
 }
 
 func (l *Logger) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	id := atomic.AddUint64(&l.reqid, 1)
-	requestID := fmt.Sprintf("%06d", id)
+	requestID := uuid.New().String()
 	ctx := context.WithValue(req.Context(), RequestIDKey, requestID)
 
 	logReq := slog.With(
@@ -47,7 +61,6 @@ func (l *Logger) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		slog.String("method", req.Method),
 		slog.String("path", req.URL.Path),
 		slog.String("addr", req.RemoteAddr),
-		//slog.String("user_agent", req.UserAgent()),
 	)
 	timeStart := time.Now()
 	lrw := NewLoggingResponseWriter(res)

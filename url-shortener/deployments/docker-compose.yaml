@@ -1,0 +1,19 @@
+services:
+    url-shortener:
+        build:
+         context: ../
+         dockerfile: cmd/url-shortener/Dockerfile
+        ports:
+         - "8081:8081"
+        depends_on:
+         - sqlite-migrate
+        volumes:
+         - ${HOME}/volumes_docker/url-shortener/sqlite-data:/data
+         - ./../configs/url-shortener.yml:/etc/url-shortener/url-shortener.yml
+    sqlite-migrate:
+        build:
+         context: ../
+         dockerfile: deployments/Dockerfile.sqlite
+        volumes:
+         - ${HOME}/volumes_docker/url-shortener/sqlite-data:/data
+

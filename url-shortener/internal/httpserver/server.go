@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mrvin/tasks-go/url-shortener/internal/app"
 	"github.com/mrvin/tasks-go/url-shortener/internal/httpserver/handler"
+	"github.com/mrvin/tasks-go/url-shortener/internal/storage"
 	"github.com/mrvin/tasks-go/url-shortener/pkg/http/logger"
-	"github.com/mrvin/tasks-go/url-shortener/pkg/http/resolver"
-	pathresolver "github.com/mrvin/tasks-go/url-shortener/pkg/http/resolver/path"
 )
+
+const readTimeout = 5   // in second
+const writeTimeout = 10 // in second
+const idleTimeout = 1   // in minute
 
 //nolint:tagliatelle
 type ConfHTTPS struct {
@@ -32,25 +34,27 @@ type Server struct {
 	http.Server
 }
 
-func New(conf *Conf, app *app.App) *Server {
-	res := pathresolver.New()
+func New(conf *Conf, st storage.Storage) *Server {
+	h := handler.New(st)
 
-	h := handler.New(app, res)
+	mux := http.NewServeMux()
 
-	res.Add("GET /health", h.HealthLivenessHandler)
-	res.Add("POST /url", h.PutURL)
-	res.Add("DELETE /url/", h.DeleteURL)
+	mux.HandleFunc(http.MethodGet+" /health", h.Health)
 
-	loggerServer := logger.Logger{Inner: &Router{res}}
+	mux.HandleFunc(http.MethodPost+" /api/v1/data/shorten", h.CreateURL)
+	mux.HandleFunc(http.MethodGet+" /api/v1/", h.Redirect)
+	mux.HandleFunc(http.MethodDelete+" /api/v1/", h.DeleteURL)
+
+	loggerServer := logger.Logger{Inner: mux}
 
 	return &Server{
 		//nolint:exhaustivestruct,exhaustruct
 		http.Server{
 			Addr:         fmt.Sprintf("%s:%d", conf.Host, conf.Port),
 			Handler:      &loggerServer,
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
-			IdleTimeout:  1 * time.Minute,
+			ReadTimeout:  readTimeout * time.Second,
+			WriteTimeout: writeTimeout * time.Second,
+			IdleTimeout:  idleTimeout * time.Minute,
 		},
 	}
 }
@@ -78,18 +82,4 @@ func (s *Server) Stop(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-type Router struct {
-	resolver.Resolver
-}
-
-func (r *Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	check := req.Method + " " + req.URL.Path
-	if handlerFunc := r.Get(check); handlerFunc != nil {
-		handlerFunc(res, req)
-		return
-	}
-
-	http.NotFound(res, req)
 }

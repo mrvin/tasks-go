@@ -1,18 +1,15 @@
 package handler
 
 import (
-	"github.com/mrvin/tasks-go/url-shortener/internal/app"
-	"github.com/mrvin/tasks-go/url-shortener/pkg/http/resolver"
+	"github.com/mrvin/tasks-go/url-shortener/internal/storage"
 )
 
 type Handler struct {
-	app *app.App
-	res resolver.Resolver
+	st storage.Storage
 }
 
-func New(a *app.App, r resolver.Resolver) *Handler {
+func New(st storage.Storage) *Handler {
 	return &Handler{
-		app: a,
-		res: r,
+		st: st,
 	}
 }

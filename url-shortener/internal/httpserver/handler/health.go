@@ -2,9 +2,10 @@ package handler
 
 import (
 	"net/http"
+
+	"github.com/mrvin/tasks-go/url-shortener/pkg/http/response"
 )
 
-func (h *Handler) HealthLivenessHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
+func (h *Handler) Health(res http.ResponseWriter, _ *http.Request) {
+	response.WriteOK(res, http.StatusOK)
 }
