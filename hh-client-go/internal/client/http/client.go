@@ -2,7 +2,6 @@ package httpclient
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net/http"
 )
@@ -14,12 +13,6 @@ type ConfAPIhh struct {
 	ClientID          string `yaml:"client_id"`
 	ClientSecret      string `yaml:"client_secret"`
 	AuthorizationCode string `yaml:"authorization_code"`
-}
-
-//nolint:tagliatelle
-type Conf struct {
-	ClientCrt string `yaml:"cert_file"`
-	ClientKey string `yaml:"key_file"`
 }
 
 type AppInfo struct {
@@ -34,29 +27,17 @@ type Client struct {
 	hhUserAgent string
 }
 
-func New(ctx context.Context, conf *Conf, confHH *ConfAPIhh, appInfo *AppInfo) (*Client, error) {
+func New(ctx context.Context, confHH *ConfAPIhh, appInfo *AppInfo) (*Client, error) {
+	var err error
 	var client Client
-	cert, err := tls.LoadX509KeyPair(conf.ClientCrt, conf.ClientKey)
-	if err != nil {
-		return nil, fmt.Errorf("load x509 key pair: %w", err)
-	}
-	tlsConf := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		MinVersion:   tls.VersionTLS12,
-	}
 
-	transport := &http.Transport{
-		TLSClientConfig: tlsConf,
-	}
-	client.Client = http.Client{
-		Transport: transport,
-	}
 	client.hhUserAgent = appInfo.Name + "/" + appInfo.Version + " (" + appInfo.Email + ")"
 
 	client.userAuth, err = client.getToken(ctx, confHH.ClientID, confHH.ClientSecret, confHH.AuthorizationCode)
 	if err != nil {
 		return nil, fmt.Errorf("get token: %w", err)
 	}
+	fmt.Println(client.userAuth)
 
 	return &client, nil
 }

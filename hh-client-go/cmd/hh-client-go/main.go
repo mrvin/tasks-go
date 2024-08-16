@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 	"log/slog"
 	"os/signal"
@@ -14,28 +13,17 @@ import (
 	"github.com/mrvin/tasks-go/hh-client-go/internal/logger"
 )
 
-//nolint:tagliatelle
-type Config struct {
-	AuthHH clienthttp.ConfAPIhh `yaml:"auth_hh"`
-	HTTP   clienthttp.Conf      `yaml:"http"`
-	Logger logger.Conf          `yaml:"logger"`
-}
-
 func main() {
-	configFile := flag.String("config", "/etc/hh-client-go/hh-client-go.yml", "path to configuration file")
-	flag.Parse()
-
 	appInfo := clienthttp.AppInfo{
 		Name:    "hh-client-go",
 		Version: "1.0",
 		Email:   "v.v.vinogradovv@gmail.com",
 	}
+	log.Printf("Start: %s %s", appInfo.Name, appInfo.Version)
 
-	var conf Config
-	if err := config.Parse(*configFile, &conf); err != nil {
-		log.Printf("Parse config: %v", err)
-		return
-	}
+	var conf config.Config
+
+	conf.LoadFromEnv()
 
 	logFile, err := logger.Init(&conf.Logger)
 	if err != nil {
@@ -47,6 +35,7 @@ func main() {
 			slog.Error("Close log file: " + err.Error())
 		}
 	}()
+
 	slog.Info("Init logger", slog.String("Logging level", conf.Logger.Level))
 
 	ctx := context.Background()
@@ -57,7 +46,7 @@ func main() {
 	)
 	defer stop()
 
-	client, err := clienthttp.New(ctx, &conf.HTTP, &conf.AuthHH, &appInfo)
+	client, err := clienthttp.New(ctx, &conf.AuthHH, &appInfo)
 	if err != nil {
 		slog.Error("Create http client: " + err.Error())
 		return

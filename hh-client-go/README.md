@@ -5,6 +5,7 @@
 
 #### Сборка
 ```shell script
+$ cd cmd/hh-client-go/
 $ make build
 go build -ldflags '-w -s' -o bin/hh-client-go
 ```
