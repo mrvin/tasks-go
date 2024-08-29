@@ -21,6 +21,8 @@ import (
 	"time"
 )
 
+const sizeBuffer = 100
+
 var keyTable = map[rune][]rune{
 	'q': {'w', 'a', 's'},
 	'w': {'q', 'a', 's', 'e'},
@@ -74,6 +76,10 @@ func main() {
 	start := time.Now()
 
 	input := bufio.NewScanner(dictionaryFile)
+
+	buf := make([]byte, sizeBuffer)
+	input.Buffer(buf, sizeBuffer)
+
 	for input.Scan() {
 		word := strings.ToLower(input.Text())
 		if isLetter(&word) {

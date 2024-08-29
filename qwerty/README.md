@@ -18,7 +18,7 @@ go build -o qwerty -ldflags '-w -s'
 ```
 #### Установка
 ```shell script
-$ go install github.com/mrvin/tasks-go/qwerty@latest
+$ go install -ldflags '-w -s' github.com/mrvin/tasks-go/qwerty@latest
 ```
 
 #### Пример работы программы:
@@ -30,3 +30,4 @@ Max length of the searched word: 6
 Max length searched word: qwerty
 Execution time: 0.386591485 s
 ```
+
