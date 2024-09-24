@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/mrvin/tasks-go/notes/internal/logger"
 	"github.com/mrvin/tasks-go/notes/internal/spelling"
 	"github.com/mrvin/tasks-go/notes/internal/storage"
 	httpresponse "github.com/mrvin/tasks-go/notes/pkg/http/response"
@@ -35,28 +36,29 @@ func NewSaveNote(creator NoteCreator) http.HandlerFunc {
 		body, err := io.ReadAll(req.Body)
 		defer req.Body.Close()
 		if err != nil {
-			err := fmt.Errorf("SaveNote: read body request: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("read body request: %w", err)
+			slog.ErrorContext(req.Context(), "Save note: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if err := json.Unmarshal(body, &request); err != nil {
-			err := fmt.Errorf("SaveNote: unmarshal body request: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("unmarshal body request: %w", err)
+			slog.ErrorContext(req.Context(), "Save note: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		ok, err := spelling.Check(req.Context(), request.Description)
 		if err != nil {
-			err := fmt.Errorf("SaveNote: spell check: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("spell check: %w", err)
+			slog.ErrorContext(req.Context(), "Save note: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
 		if !ok {
-			err := fmt.Errorf("Text %q not pass the spell check", request.Description)
+			err := fmt.Errorf("text %q not pass the spell check", request.Description)
+			slog.ErrorContext(req.Context(), "Save note: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -67,11 +69,17 @@ func NewSaveNote(creator NoteCreator) http.HandlerFunc {
 			Description: request.Description,
 		}
 
-		userName, _ := req.Context().Value("userName").(string)
+		userName, err := logger.GetUserNameFromCtx(req.Context())
+		if err != nil {
+			err := fmt.Errorf("get user name from ctx: %w", err)
+			slog.ErrorContext(req.Context(), "Save note: "+err.Error())
+			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		id, err := creator.CreateNote(req.Context(), userName, &note)
 		if err != nil {
-			err := fmt.Errorf("SaveNote: saving note to storage: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("saving note to storage: %w", err)
+			slog.ErrorContext(req.Context(), "Save note: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -84,8 +92,8 @@ func NewSaveNote(creator NoteCreator) http.HandlerFunc {
 
 		jsonResponseSaveNote, err := json.Marshal(&response)
 		if err != nil {
-			err := fmt.Errorf("SaveNote: marshal response: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("marshal response: %w", err)
+			slog.ErrorContext(req.Context(), "Save note: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -93,12 +101,12 @@ func NewSaveNote(creator NoteCreator) http.HandlerFunc {
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(http.StatusCreated)
 		if _, err := res.Write(jsonResponseSaveNote); err != nil {
-			err := fmt.Errorf("SaveNote: write response: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("write response: %w", err)
+			slog.ErrorContext(req.Context(), "Save note: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		slog.Info("New note created successfully")
+		slog.InfoContext(req.Context(), "New note created successfully")
 	}
 }

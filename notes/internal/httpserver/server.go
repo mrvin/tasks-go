@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mrvin/tasks-go/notes/internal/httpserver/handlers"
+	log "github.com/mrvin/tasks-go/notes/internal/logger"
 	"github.com/mrvin/tasks-go/notes/internal/storage"
 	"github.com/mrvin/tasks-go/notes/pkg/http/logger"
 	"golang.org/x/crypto/bcrypt"
@@ -88,7 +89,7 @@ func auth(next http.HandlerFunc, getter UserGetter) http.HandlerFunc {
 			return
 		}
 
-		ctx = context.WithValue(ctx, "userName", userName)
+		ctx = log.WithUserName(ctx, userName)
 
 		next(res, req.WithContext(ctx)) // Pass request to next handler
 	}

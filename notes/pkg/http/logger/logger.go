@@ -1,17 +1,13 @@
 package logger
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/mrvin/tasks-go/notes/internal/logger"
 )
-
-type requestID string
-
-const RequestIDKey = requestID("requestID")
 
 type LoggingResponseWriter struct {
 	http.ResponseWriter
@@ -35,29 +31,16 @@ func (lrw *LoggingResponseWriter) Write(slByte []byte) (int, error) {
 	return writeByte, err //nolint:wrapcheck
 }
 
-func GetRequestID(ctx context.Context) string {
-	if ctx == nil {
-		slog.Warn("GetRequestID: ctx is nil")
-		return ""
-	}
-	if requestID, ok := ctx.Value(RequestIDKey).(string); ok {
-		return requestID
-	}
-	slog.Warn("GetRequestID: no request id in ctx")
-
-	return ""
-}
-
 type Logger struct {
 	Inner http.Handler
 }
 
 func (l *Logger) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	requestID := uuid.New().String()
-	ctx := context.WithValue(req.Context(), RequestIDKey, requestID)
+	ctx := logger.WithRequestID(req.Context(), requestID)
 
 	logReq := slog.With(
-		slog.String("request_id", requestID),
+		slog.String("requestID", requestID),
 		slog.String("method", req.Method),
 		slog.String("path", req.URL.Path),
 		slog.String("addr", req.RemoteAddr),

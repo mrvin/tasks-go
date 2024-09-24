@@ -31,22 +31,22 @@ func NewRegistration(creator UserCreator) http.HandlerFunc {
 		body, err := io.ReadAll(req.Body)
 		defer req.Body.Close()
 		if err != nil {
-			err := fmt.Errorf("Registration: read body request: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("read body request: %w", err)
+			slog.ErrorContext(req.Context(), "Registration: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if err := json.Unmarshal(body, &request); err != nil {
-			err := fmt.Errorf("Registration: unmarshal body request: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("unmarshal body request: %w", err)
+			slog.ErrorContext(req.Context(), "Registration: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
 		hashPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 		if err != nil {
-			err := fmt.Errorf("Registration: generate hash password: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("generate hash password: %w", err)
+			slog.ErrorContext(req.Context(), "Registration: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -57,8 +57,8 @@ func NewRegistration(creator UserCreator) http.HandlerFunc {
 		}
 
 		if err = creator.CreateUser(req.Context(), &user); err != nil {
-			err := fmt.Errorf("Registration: saving user to storage: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("saving user to storage: %w", err)
+			slog.ErrorContext(req.Context(), "Registration: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -66,6 +66,6 @@ func NewRegistration(creator UserCreator) http.HandlerFunc {
 		// Write json response
 		httpresponse.WriteOK(res, http.StatusCreated)
 
-		slog.Info("New user registration was successful")
+		slog.InfoContext(req.Context(), "New user registration was successful")
 	}
 }

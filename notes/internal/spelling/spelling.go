@@ -41,7 +41,7 @@ func Check(ctx context.Context, text string) (bool, error) {
 		return false, fmt.Errorf("create request: %w", err)
 	}
 
-	slog.Info("Check text", slog.String("url", requestURL))
+	slog.InfoContext(ctx, "Check text", slog.String("url", requestURL))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

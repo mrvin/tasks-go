@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/mrvin/tasks-go/notes/internal/logger"
 	"github.com/mrvin/tasks-go/notes/internal/storage"
 	httpresponse "github.com/mrvin/tasks-go/notes/pkg/http/response"
 )
@@ -22,11 +23,18 @@ type ResponseListNotes struct {
 
 func NewListNotes(lister NoteLister) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		userName, _ := req.Context().Value("userName").(string)
+		userName, err := logger.GetUserNameFromCtx(req.Context())
+		if err != nil {
+			err := fmt.Errorf("get user name from ctx: %w", err)
+			slog.ErrorContext(req.Context(), "List notes: "+err.Error())
+			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		notes, err := lister.ListNotes(req.Context(), userName)
 		if err != nil {
-			err := fmt.Errorf("ListNotes: get list notes: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("get list notes: %w", err)
+			slog.ErrorContext(req.Context(), "List notes: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -39,8 +47,8 @@ func NewListNotes(lister NoteLister) http.HandlerFunc {
 
 		jsonResponseListNotes, err := json.Marshal(response)
 		if err != nil {
-			err := fmt.Errorf("ListNotes: marshal response: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("marshal response: %w", err)
+			slog.ErrorContext(req.Context(), "List notes: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -48,10 +56,12 @@ func NewListNotes(lister NoteLister) http.HandlerFunc {
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(http.StatusOK)
 		if _, err := res.Write(jsonResponseListNotes); err != nil {
-			err := fmt.Errorf("ListNotes: write response: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("write response: %w", err)
+			slog.ErrorContext(req.Context(), "List notes: "+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		slog.InfoContext(req.Context(), "List of notes received successfully")
 	}
 }

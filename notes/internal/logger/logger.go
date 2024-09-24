@@ -1,10 +1,19 @@
 package logger
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"time"
+)
+
+type contextKey int
+
+const (
+	contextKeyRequestID contextKey = iota
+	contextKeyUserName
 )
 
 const logFileMode = 0755
@@ -12,6 +21,10 @@ const logFileMode = 0755
 type Conf struct {
 	FilePath string `yaml:"filepath"`
 	Level    string `yaml:"level"`
+}
+
+type ContextHandler struct {
+	slog.Handler
 }
 
 func Init(conf *Conf) (*os.File, error) {
@@ -46,8 +59,38 @@ func Init(conf *Conf) (*os.File, error) {
 		ReplaceAttr: replaceAttr,
 	})
 
-	logger := slog.New(handler)
+	logger := slog.New(ContextHandler{handler})
 	slog.SetDefault(logger)
 
 	return logFile, nil
+}
+
+func WithRequestID(ctx context.Context, requestID string) context.Context {
+	return context.WithValue(ctx, contextKeyRequestID, requestID)
+}
+
+func WithUserName(ctx context.Context, userName string) context.Context {
+	return context.WithValue(ctx, contextKeyUserName, userName)
+}
+
+func GetUserNameFromCtx(ctx context.Context) (string, error) {
+	if ctx == nil {
+		return "", errors.New("ctx is nil")
+	}
+	if userName, ok := ctx.Value(contextKeyUserName).(string); ok {
+		return userName, nil
+	}
+
+	return "", errors.New("no UserName in ctx")
+}
+
+func (h ContextHandler) Handle(ctx context.Context, r slog.Record) error {
+	if requestID, ok := ctx.Value(contextKeyRequestID).(string); ok {
+		r.Add("requestID", requestID)
+	}
+	if userName, ok := ctx.Value(contextKeyUserName).(string); ok {
+		r.Add("userName", userName)
+	}
+
+	return h.Handler.Handle(ctx, r) //nolint:wrapcheck
 }
