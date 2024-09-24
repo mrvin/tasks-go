@@ -29,6 +29,7 @@ services:
          - ../configs/notes.env
         healthcheck:
           test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+          interval: 3s
         volumes:
          - ${HOME}/volumes_docker/notes/postgres-data:/var/lib/postgresql/data
 
