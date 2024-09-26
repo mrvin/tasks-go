@@ -1,9 +1,9 @@
 ## Build
-FROM golang:1.22.5-alpine AS build
+FROM golang:1.23.1-alpine AS build
 
-MAINTAINER mrvin <v.v.vinogradovv@gmail.com>
+LABEL maintainer="mrvin v.v.vinogradovv@gmail.com"
 
-RUN apk add --update make
+RUN apk update && apk add make && apk add tzdata
 
 WORKDIR /app
 
@@ -26,7 +26,10 @@ FROM scratch
 
 WORKDIR /
 
+COPY --from=build ["/usr/share/zoneinfo", "/usr/share/zoneinfo"]
 COPY --from=build ["/app/bin/url-shortener", "/usr/local/bin/url-shortener"]
+
+ENV TZ=Europe/Moscow
 
 EXPOSE 8081
 

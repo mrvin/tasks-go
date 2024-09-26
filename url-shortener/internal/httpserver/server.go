@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mrvin/tasks-go/url-shortener/internal/httpserver/handler"
+	"github.com/mrvin/tasks-go/url-shortener/internal/httpserver/handlers"
 	"github.com/mrvin/tasks-go/url-shortener/internal/storage"
 	"github.com/mrvin/tasks-go/url-shortener/pkg/http/logger"
 )
@@ -35,15 +35,13 @@ type Server struct {
 }
 
 func New(conf *Conf, st storage.Storage) *Server {
-	h := handler.New(st)
-
 	mux := http.NewServeMux()
 
-	mux.HandleFunc(http.MethodGet+" /health", h.Health)
+	mux.HandleFunc(http.MethodGet+" /health", handlers.Health)
 
-	mux.HandleFunc(http.MethodPost+" /api/v1/data/shorten", h.CreateURL)
-	mux.HandleFunc(http.MethodGet+" /api/v1/", h.Redirect)
-	mux.HandleFunc(http.MethodDelete+" /api/v1/", h.DeleteURL)
+	mux.HandleFunc(http.MethodPost+" /data/shorten", handlers.NewSaveURL(st))
+	mux.HandleFunc(http.MethodGet+" /{alias...}", handlers.NewRedirect(st))
+	mux.HandleFunc(http.MethodDelete+" /{alias...}", handlers.NewDeleteURL(st))
 
 	loggerServer := logger.Logger{Inner: mux}
 

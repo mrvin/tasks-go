@@ -1,10 +1,17 @@
 package logger
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"time"
+)
+
+type contextKey int
+
+const (
+	contextKeyRequestID contextKey = iota
 )
 
 const logFileMode = 0755
@@ -12,6 +19,10 @@ const logFileMode = 0755
 type Conf struct {
 	FilePath string `yaml:"filepath"`
 	Level    string `yaml:"level"`
+}
+
+type ContextHandler struct {
+	slog.Handler
 }
 
 func Init(conf *Conf) (*os.File, error) {
@@ -46,8 +57,20 @@ func Init(conf *Conf) (*os.File, error) {
 		ReplaceAttr: replaceAttr,
 	})
 
-	logger := slog.New(handler)
+	logger := slog.New(ContextHandler{handler})
 	slog.SetDefault(logger)
 
 	return logFile, nil
+}
+
+func WithRequestID(ctx context.Context, requestID string) context.Context {
+	return context.WithValue(ctx, contextKeyRequestID, requestID)
+}
+
+func (h ContextHandler) Handle(ctx context.Context, r slog.Record) error {
+	if requestID, ok := ctx.Value(contextKeyRequestID).(string); ok {
+		r.Add("requestID", requestID)
+	}
+
+	return h.Handler.Handle(ctx, r) //nolint:wrapcheck
 }
