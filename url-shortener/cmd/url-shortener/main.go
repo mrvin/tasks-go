@@ -14,10 +14,12 @@ import (
 	sqlstorage "github.com/mrvin/tasks-go/url-shortener/internal/storage/sql"
 )
 
+//nolint:tagliatelle
 type Config struct {
-	HTTP   httpserver.Conf `yaml:"http"`
-	DB     sqlstorage.Conf `yaml:"db"`
-	Logger logger.Conf     `yaml:"logger"`
+	DefaultAliasLength int             `yaml:"default_alias_length"`
+	HTTP               httpserver.Conf `yaml:"http"`
+	DB                 sqlstorage.Conf `yaml:"db"`
+	Logger             logger.Conf     `yaml:"logger"`
 }
 
 func main() {
@@ -54,7 +56,7 @@ func main() {
 	slog.Info("Connected to database")
 
 	// Start server
-	server := httpserver.New(&conf.HTTP, st)
+	server := httpserver.New(&conf.HTTP, conf.DefaultAliasLength, st)
 
 	if err := server.Start(); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {

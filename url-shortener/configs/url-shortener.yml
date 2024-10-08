@@ -1,3 +1,5 @@
+default_alias_length: 6
+
 # database settings
 db:
     path: /data/storage.db

@@ -34,12 +34,12 @@ type Server struct {
 	http.Server
 }
 
-func New(conf *Conf, st storage.Storage) *Server {
+func New(conf *Conf, defaultAliasLengthint int, st storage.Storage) *Server {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc(http.MethodGet+" /health", handlers.Health)
 
-	mux.HandleFunc(http.MethodPost+" /data/shorten", handlers.NewSaveURL(st))
+	mux.HandleFunc(http.MethodPost+" /data/shorten", handlers.NewSaveURL(st, defaultAliasLengthint))
 	mux.HandleFunc(http.MethodGet+" /{alias...}", handlers.NewRedirect(st))
 	mux.HandleFunc(http.MethodDelete+" /{alias...}", handlers.NewDeleteURL(st))
 
