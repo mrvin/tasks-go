@@ -24,8 +24,7 @@ type ConfHTTPS struct {
 
 //nolint:tagliatelle
 type Conf struct {
-	Host    string    `yaml:"host"`
-	Port    int       `yaml:"port"`
+	Addr    string    `yaml:"addr"`
 	IsHTTPS bool      `yaml:"is_https"`
 	HTTPS   ConfHTTPS `yaml:"https"`
 }
@@ -41,6 +40,7 @@ func New(conf *Conf, defaultAliasLengthint int, st storage.Storage) *Server {
 
 	mux.HandleFunc(http.MethodPost+" /data/shorten", handlers.NewSaveURL(st, defaultAliasLengthint))
 	mux.HandleFunc(http.MethodGet+" /{alias...}", handlers.NewRedirect(st))
+	mux.HandleFunc(http.MethodGet+" /statistics/{alias...}", handlers.NewGetCount(st))
 	mux.HandleFunc(http.MethodDelete+" /{alias...}", handlers.NewDeleteURL(st))
 
 	loggerServer := logger.Logger{Inner: mux}
@@ -48,7 +48,7 @@ func New(conf *Conf, defaultAliasLengthint int, st storage.Storage) *Server {
 	return &Server{
 		//nolint:exhaustivestruct,exhaustruct
 		http.Server{
-			Addr:         fmt.Sprintf("%s:%d", conf.Host, conf.Port),
+			Addr:         conf.Addr,
 			Handler:      &loggerServer,
 			ReadTimeout:  readTimeout * time.Second,
 			WriteTimeout: writeTimeout * time.Second,

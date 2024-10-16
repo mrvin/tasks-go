@@ -63,7 +63,7 @@ func NewSaveURL(creator URLCreator, defaultAliasLengthint int) http.HandlerFunc 
 				return
 			}
 			err := fmt.Errorf("failed save url: %w", err)
-			slog.ErrorContext(req.Context(), "Save url: "+err.Error())
+			slog.ErrorContext(req.Context(), "Save url: "+err.Error(), slog.String("alias", request.Alias))
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -100,7 +100,7 @@ func NewSaveURL(creator URLCreator, defaultAliasLengthint int) http.HandlerFunc 
 }
 
 func generateAlias(length int) string {
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano())) //nolint:gosec
 
 	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz" + "0123456789")
 

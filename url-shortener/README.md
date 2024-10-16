@@ -32,6 +32,7 @@ $ make up
 $ curl -i -X GET 'http://localhost:8081/health'
 $ curl -i -X POST 'http://localhost:8081/data/shorten' -H "Content-Type: application/json" -d '{"url":"https://en.wikipedia.org/wiki/Systems_design","alias":"zn9edcu"}'
 $ curl -i -X GET 'http://localhost:8081/zn9edcu'
+$ curl -i -X GET 'http://localhost:8081/statistics/zn9edcu'
 $ curl -i -X DELETE 'http://localhost:8081/zn9edcu'
 ```
 
