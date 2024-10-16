@@ -15,4 +15,5 @@ type Storage interface {
 	CreateURL(ctx context.Context, urlToSave string, alias string) (int64, error)
 	GetURL(ctx context.Context, alias string) (string, error)
 	DeleteURL(ctx context.Context, alias string) error
+	GetCount(ctx context.Context, alias string) (uint64, error)
 }
