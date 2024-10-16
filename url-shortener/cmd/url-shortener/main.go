@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"flag"
 	stdlog "log"
 	"log/slog"
 	"net/http"
@@ -14,25 +13,10 @@ import (
 	sqlstorage "github.com/mrvin/tasks-go/url-shortener/internal/storage/sql"
 )
 
-//nolint:tagliatelle
-type Config struct {
-	DefaultAliasLength int             `yaml:"default_alias_length"`
-	HTTP               httpserver.Conf `yaml:"http"`
-	DB                 sqlstorage.Conf `yaml:"db"`
-	Logger             logger.Conf     `yaml:"logger"`
-}
-
 func main() {
-	ctx := context.Background()
-	configFile := flag.String("config", "/etc/url-shortener/url-shortener.yml", "path to configuration file")
-	flag.Parse()
-
 	// init config
-	var conf Config
-	if err := config.Parse(*configFile, &conf); err != nil {
-		stdlog.Printf("Parse config: %v", err)
-		return
-	}
+	var conf config.Config
+	conf.LoadFromEnv()
 
 	// init logger
 	logFile, err := logger.Init(&conf.Logger)
@@ -48,6 +32,7 @@ func main() {
 	}()
 
 	// init storage
+	ctx := context.Background()
 	st, err := sqlstorage.New(ctx, &conf.DB)
 	if err != nil {
 		slog.Error("Failed to init storage: " + err.Error())

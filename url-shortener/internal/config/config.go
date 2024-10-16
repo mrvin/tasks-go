@@ -1,21 +1,64 @@
 package config
 
 import (
-	"fmt"
+	"log/slog"
 	"os"
 
-	"gopkg.in/yaml.v3"
+	"github.com/mrvin/tasks-go/url-shortener/internal/httpserver"
+	"github.com/mrvin/tasks-go/url-shortener/internal/logger"
+	sqlstorage "github.com/mrvin/tasks-go/url-shortener/internal/storage/sql"
 )
 
-func Parse(configPath string, conf interface{}) error {
-	configYml, err := os.ReadFile(configPath)
-	if err != nil {
-		return fmt.Errorf("reading %s error: %w", configPath, err)
+//nolint:tagliatelle
+type Config struct {
+	DefaultAliasLength int             `yaml:"default_alias_length"`
+	HTTP               httpserver.Conf `yaml:"http"`
+	DB                 sqlstorage.Conf `yaml:"db"`
+	Logger             logger.Conf     `yaml:"logger"`
+}
+
+// LoadFromEnv will load configuration solely from the environment.
+func (c *Config) LoadFromEnv() {
+	if host := os.Getenv("POSTGRES_HOST"); host != "" {
+		c.DB.Host = host
+	} else {
+		slog.Warn("Empty postgres host")
+	}
+	if port := os.Getenv("POSTGRES_PORT"); port != "" {
+		c.DB.Port = port
+	} else {
+		slog.Warn("Empty postgres port")
+	}
+	if user := os.Getenv("POSTGRES_USER"); user != "" {
+		c.DB.User = user
+	} else {
+		slog.Warn("Empty postgres user")
+	}
+	if password := os.Getenv("POSTGRES_PASSWORD"); password != "" {
+		c.DB.Password = password
+	} else {
+		slog.Warn("Empty postgres password")
+	}
+	if name := os.Getenv("POSTGRES_DB"); name != "" {
+		c.DB.Name = name
+	} else {
+		slog.Warn("Empty postgres db name")
 	}
 
-	if err := yaml.Unmarshal(configYml, conf); err != nil {
-		return fmt.Errorf("can't unmarshal %s: %w", configPath, err)
+	if addr := os.Getenv("SERVER_HTTP_ADDR"); addr != "" {
+		c.HTTP.Addr = addr
+	} else {
+		slog.Warn("Empty server http addr")
 	}
 
-	return nil
+	if logFilePath := os.Getenv("LOGGER_FILEPATH"); logFilePath != "" {
+		c.Logger.FilePath = logFilePath
+	} else {
+		slog.Warn("Empty log file path")
+	}
+	if logLevel := os.Getenv("LOGGER_LEVEL"); logLevel != "" {
+		c.Logger.Level = logLevel
+	} else {
+		slog.Warn("Empty log level")
+	}
 }
