@@ -3,9 +3,7 @@ package sqlstorage
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
-	"log/slog"
 	"time"
 
 	// Add pure Go Postgres driver for the database/sql package.
@@ -30,9 +28,10 @@ type Storage struct {
 
 	conf *Conf
 
-	insertURL *sql.Stmt
-	deleteURL *sql.Stmt
-	getCount  *sql.Stmt
+	insertURL    *sql.Stmt
+	selectGetURL *sql.Stmt
+	deleteURL    *sql.Stmt
+	getCount     *sql.Stmt
 }
 
 func New(ctx context.Context, conf *Conf) (*Storage, error) {
@@ -80,6 +79,11 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf(fmtStrErr, "insert url", err)
 	}
+	const sqlGetURL = "SELECT get_url($1)"
+	s.selectGetURL, err = s.db.PrepareContext(ctx, sqlGetURL)
+	if err != nil {
+		return fmt.Errorf(fmtStrErr, "select get url", err)
+	}
 	const sqlDeleteURL = "DELETE FROM url WHERE alias = $1"
 	s.deleteURL, err = s.db.PrepareContext(ctx, sqlDeleteURL)
 	if err != nil {
@@ -104,45 +108,13 @@ func (s *Storage) CreateURL(ctx context.Context, urlToSave string, alias string)
 }
 
 func (s *Storage) GetURL(ctx context.Context, alias string) (string, error) {
-	tx, err := s.db.BeginTx(ctx, nil)
-	if err != nil {
-		return "", fmt.Errorf("start transaction: %w", err)
-	}
-	defer func() {
-		if err := tx.Rollback(); err != nil {
-			slog.Error("Failed rollback transaction" + err.Error())
-		}
-	}()
-	const sqlGetURL = "SELECT url FROM url WHERE alias = $1"
-	stmt, err := tx.PrepareContext(ctx, sqlGetURL)
-	if err != nil {
-		return "", fmt.Errorf("prepare \"select url\" query: %w", err)
-	}
-	defer stmt.Close()
+	var url string
 
-	var resURL string
-	if err := stmt.QueryRowContext(ctx, alias).Scan(&resURL); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return "", storage.ErrURLNotFound
-		}
-
-		return "", fmt.Errorf("get url: %w", err)
-	}
-	const sqlIncrementCount = "UPDATE url SET count = count+1 WHERE alias = $1"
-	stmt, err = tx.PrepareContext(ctx, sqlIncrementCount)
-	if err != nil {
-		return "", fmt.Errorf("prepare \"increment count\" query: %w", err)
-	}
-	defer stmt.Close()
-	if _, err := stmt.ExecContext(ctx, alias); err != nil {
-		return "", fmt.Errorf("increment count: %w", err)
+	if err := s.selectGetURL.QueryRowContext(ctx, alias).Scan(&url); err != nil {
+		return "", fmt.Errorf("execute statement: select get_url func: %w", err)
 	}
 
-	if err := tx.Commit(); err != nil {
-		return "", fmt.Errorf("commit transaction: %w", err)
-	}
-
-	return resURL, nil
+	return url, nil
 }
 
 func (s *Storage) DeleteURL(ctx context.Context, alias string) error {
@@ -173,6 +145,7 @@ func (s *Storage) GetCount(ctx context.Context, alias string) (uint64, error) {
 
 func (s *Storage) Close() error {
 	s.insertURL.Close()
+	s.selectGetURL.Close()
 	s.deleteURL.Close()
 	s.getCount.Close()
 

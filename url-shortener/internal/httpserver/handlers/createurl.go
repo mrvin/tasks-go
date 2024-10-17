@@ -9,11 +9,14 @@ import (
 	"log/slog"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/mrvin/tasks-go/url-shortener/internal/storage"
 	httpresponse "github.com/mrvin/tasks-go/url-shortener/pkg/http/response"
 )
+
+const defaultAliasLen = 6
 
 type URLCreator interface {
 	CreateURL(ctx context.Context, urlToSave string, alias string) (int64, error)
@@ -30,6 +33,9 @@ type Response struct {
 }
 
 func NewSaveURL(creator URLCreator, defaultAliasLengthint int) http.HandlerFunc {
+	if defaultAliasLengthint == 0 {
+		defaultAliasLengthint = defaultAliasLen
+	}
 	return func(res http.ResponseWriter, req *http.Request) {
 		var request Request
 
@@ -50,6 +56,11 @@ func NewSaveURL(creator URLCreator, defaultAliasLengthint int) http.HandlerFunc 
 			return
 		}
 
+		if strings.HasPrefix(request.Alias, "statistics") {
+			err := errors.New("'statistics' reserved path")
+			slog.ErrorContext(req.Context(), "Save url: "+err.Error())
+			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
+		}
 		if request.Alias == "" {
 			request.Alias = generateAlias(defaultAliasLengthint)
 		}

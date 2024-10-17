@@ -6,3 +6,22 @@ CREATE TABLE IF NOT EXISTS url(
 	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_alias ON url(alias);
+
+CREATE OR REPLACE FUNCTION get_url(alias_for_url TEXT)
+RETURNS TEXT
+LANGUAGE plpgsql
+as
+$$
+DECLARE
+	full_url TEXT;
+BEGIN
+	SELECT url INTO full_url FROM url WHERE alias = alias_for_url;
+	IF NOT FOUND THEN
+		RAISE EXCEPTION 'alias % not found', alias_for_url;
+	END IF;
+
+	UPDATE url SET count = count+1 WHERE alias = alias_for_url;
+
+	return full_url;
+END;
+$$;
