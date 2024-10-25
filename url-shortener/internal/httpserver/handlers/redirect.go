@@ -18,6 +18,7 @@ type URLGetter interface {
 func NewRedirect(getter URLGetter) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		alias := req.PathValue("alias")
+
 		resURL, err := getter.GetURL(req.Context(), alias)
 		if err != nil {
 			if errors.Is(err, storage.ErrURLNotFound) {

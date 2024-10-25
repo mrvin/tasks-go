@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mrvin/tasks-go/url-shortener/internal/logger"
 	"github.com/mrvin/tasks-go/url-shortener/internal/storage"
 	httpresponse "github.com/mrvin/tasks-go/url-shortener/pkg/http/response"
 )
@@ -19,7 +20,7 @@ import (
 const defaultAliasLen = 6
 
 type URLCreator interface {
-	CreateURL(ctx context.Context, urlToSave string, alias string) (int64, error)
+	CreateURL(ctx context.Context, userName, urlToSave, alias string) error
 }
 
 type Request struct {
@@ -65,8 +66,15 @@ func NewSaveURL(creator URLCreator, defaultAliasLengthint int) http.HandlerFunc 
 			request.Alias = generateAlias(defaultAliasLengthint)
 		}
 
-		id, err := creator.CreateURL(req.Context(), request.URL, request.Alias)
+		userName, err := logger.GetUserNameFromCtx(req.Context())
 		if err != nil {
+			err := fmt.Errorf("get user name from ctx: %w", err)
+			slog.ErrorContext(req.Context(), "Save url: "+err.Error())
+			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if err := creator.CreateURL(req.Context(), userName, request.URL, request.Alias); err != nil {
 			if errors.Is(err, storage.ErrURLExists) {
 				err := fmt.Errorf("alias already exists: %w", err)
 				slog.InfoContext(req.Context(), "Save url: "+err.Error(), slog.String("alias", request.Alias))
@@ -103,7 +111,6 @@ func NewSaveURL(creator URLCreator, defaultAliasLengthint int) http.HandlerFunc 
 		}
 
 		slog.InfoContext(req.Context(), "Create new url",
-			slog.Int64("id", id),
 			slog.String("alias", request.Alias),
 			slog.String("url", request.URL),
 		)

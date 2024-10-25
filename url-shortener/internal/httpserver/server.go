@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/mrvin/tasks-go/url-shortener/internal/httpserver/handlers"
+	log "github.com/mrvin/tasks-go/url-shortener/internal/logger"
 	"github.com/mrvin/tasks-go/url-shortener/internal/storage"
 	"github.com/mrvin/tasks-go/url-shortener/pkg/http/logger"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const readTimeout = 5   // in second
@@ -38,10 +40,13 @@ func New(conf *Conf, defaultAliasLengthint int, st storage.Storage) *Server {
 
 	mux.HandleFunc(http.MethodGet+" /health", handlers.Health)
 
-	mux.HandleFunc(http.MethodPost+" /data/shorten", handlers.NewSaveURL(st, defaultAliasLengthint))
+	mux.HandleFunc(http.MethodPost+" /users", handlers.NewRegistration(st))
+
+	mux.HandleFunc(http.MethodPost+" /data/shorten", auth(handlers.NewSaveURL(st, defaultAliasLengthint), st))
+	mux.HandleFunc(http.MethodGet+" /statistics/{alias...}", auth(handlers.NewGetCount(st), st))
+	mux.HandleFunc(http.MethodDelete+" /{alias...}", auth(handlers.NewDeleteURL(st), st))
+
 	mux.HandleFunc(http.MethodGet+" /{alias...}", handlers.NewRedirect(st))
-	mux.HandleFunc(http.MethodGet+" /statistics/{alias...}", handlers.NewGetCount(st))
-	mux.HandleFunc(http.MethodDelete+" /{alias...}", handlers.NewDeleteURL(st))
 
 	loggerServer := logger.Logger{Inner: mux}
 
@@ -80,4 +85,34 @@ func (s *Server) Stop(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+type UserGetter interface {
+	GetUser(ctx context.Context, name string) (*storage.User, error)
+}
+
+func auth(next http.HandlerFunc, getter UserGetter) http.HandlerFunc {
+	handler := func(res http.ResponseWriter, req *http.Request) {
+		userName, password, ok := req.BasicAuth()
+		if !ok {
+			http.Error(res, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		ctx := req.Context()
+		user, err := getter.GetUser(ctx, userName)
+		if err != nil {
+			http.Error(res, "Unauthorized", http.StatusInternalServerError)
+			return
+		}
+		if err := bcrypt.CompareHashAndPassword([]byte(user.HashPassword), []byte(password)); err != nil {
+			http.Error(res, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		ctx = log.WithUserName(ctx, userName)
+
+		next(res, req.WithContext(ctx)) // Pass request to next handler
+	}
+
+	return http.HandlerFunc(handler)
 }

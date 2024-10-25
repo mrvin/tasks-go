@@ -7,11 +7,12 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/mrvin/tasks-go/url-shortener/internal/logger"
 	httpresponse "github.com/mrvin/tasks-go/url-shortener/pkg/http/response"
 )
 
 type CountGetter interface {
-	GetCount(ctx context.Context, alias string) (uint64, error)
+	GetCountURL(ctx context.Context, userName, alias string) (uint64, error)
 }
 
 type ResponseGetCount struct {
@@ -23,7 +24,15 @@ func NewGetCount(getter CountGetter) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		alias := req.PathValue("alias")
 
-		count, err := getter.GetCount(req.Context(), alias)
+		userName, err := logger.GetUserNameFromCtx(req.Context())
+		if err != nil {
+			err := fmt.Errorf("get user name from ctx: %w", err)
+			slog.ErrorContext(req.Context(), "Get count: "+err.Error())
+			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		count, err := getter.GetCountURL(req.Context(), userName, alias)
 		if err != nil {
 			err := fmt.Errorf("get count: %w", err)
 			slog.InfoContext(req.Context(), "Get count: "+err.Error(), slog.String("alias", alias))

@@ -1,8 +1,15 @@
+CREATE TABLE IF NOT EXISTS users (
+	name TEXT NOT NULL UNIQUE PRIMARY KEY,
+	hash_password TEXT NOT NULL,
+	role TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_name ON users(name);
+
 CREATE TABLE IF NOT EXISTS url(
-	id serial PRIMARY KEY,
-	alias TEXT NOT NULL UNIQUE,
+	alias TEXT NOT NULL UNIQUE PRIMARY KEY,
 	url TEXT NOT NULL,
-	count NUMERIC(20,0) NOT NULL CHECK (count >= 0 AND count <= 18446744073709551615),
+	count NUMERIC(20,0) NOT NULL CHECK (count >= 0 AND count <= 18446744073709551615) DEFAULT 0,
+	user_name TEXT references users(name) on delete cascade,
 	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_alias ON url(alias);
