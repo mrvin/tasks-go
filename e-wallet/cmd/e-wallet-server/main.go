@@ -21,8 +21,6 @@ type Config struct {
 	Logger logger.Conf     `yaml:"logger"`
 }
 
-var ctx = context.Background()
-
 func main() {
 	configFile := flag.String("config", "/etc/e-wallet/e-wallet.yml", "path to configuration file")
 	flag.Parse()
@@ -45,6 +43,7 @@ func main() {
 		}
 	}()
 
+	ctx := context.Background()
 	slog.Info("Storage in sql database")
 	storage, err := sqlstorage.New(ctx, &conf.DB)
 	if err != nil {

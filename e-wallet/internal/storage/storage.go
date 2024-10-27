@@ -12,6 +12,8 @@ type WalletStorage interface {
 	Balance(ctx context.Context, walletID uuid.UUID) (float64, error)
 
 	Send(ctx context.Context, transaction Transaction) error
+	Deposit(ctx context.Context, walletID uuid.UUID, amount float64) error
+	Withdraw(ctx context.Context, walletID uuid.UUID, amount float64) error
 
 	HistoryTransactions(ctx context.Context, walletID uuid.UUID) ([]Transaction, error)
 }

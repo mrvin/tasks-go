@@ -1,9 +1,9 @@
 ## Build
-FROM golang:1.21.6-alpine AS build
+FROM golang:1.23.2-alpine AS build
 
-MAINTAINER mrvin <v.v.vinogradovv@gmail.com>
+LABEL maintainer="mrvin v.v.vinogradovv@gmail.com"
 
-RUN apk add --update make
+RUN apk update && apk add make && apk add tzdata
 
 WORKDIR /app
 
@@ -23,8 +23,11 @@ FROM scratch
 
 WORKDIR /
 
-COPY --from=build ["/app/bin/e-wallet-server", "/"]
+COPY --from=build ["/usr/share/zoneinfo", "/usr/share/zoneinfo"]
+COPY --from=build ["/app/bin/e-wallet-server", "/usr/local/bin/e-wallet-server"]
+
+ENV TZ=Europe/Moscow
 
 EXPOSE 8088
 
-ENTRYPOINT ["/e-wallet-server"]
+ENTRYPOINT ["/usr/local/bin/e-wallet-server"]

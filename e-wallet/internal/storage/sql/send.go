@@ -112,11 +112,8 @@ func (s *Storage) SendOld(ctx context.Context, transaction storage.Transaction) 
 }
 
 func (s *Storage) Send(ctx context.Context, transaction storage.Transaction) error {
-	sqlSend := `
-	CALL transfer($1, $2, $3);`
-	if _, err := s.db.ExecContext(
+	if _, err := s.send.ExecContext(
 		ctx,
-		sqlSend,
 		transaction.WalletIDFrom,
 		transaction.WalletIDTo,
 		transaction.Amount,

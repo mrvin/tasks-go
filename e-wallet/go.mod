@@ -1,6 +1,6 @@
 module github.com/mrvin/tasks-go/e-wallet
 
-go 1.21.5
+go 1.23.2
 
 require (
 	github.com/google/uuid v1.5.0

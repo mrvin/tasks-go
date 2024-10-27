@@ -13,6 +13,10 @@ import (
 
 const retriesConnect = 5
 
+const maxOpenConns = 25
+const maxIdleConns = 25
+const connMaxLifetime = 5 * time.Minute
+
 type Conf struct {
 	Driver   string `yaml:"driver"`
 	Host     string `yaml:"host"`
@@ -29,6 +33,10 @@ type Storage struct {
 
 	insertWallet *sql.Stmt
 	getBalance   *sql.Stmt
+
+	send     *sql.Stmt
+	withdraw *sql.Stmt
+	deposit  *sql.Stmt
 
 	getHistory *sql.Stmt
 }
@@ -63,9 +71,9 @@ func (s *Storage) Connect(ctx context.Context) error {
 	}
 
 	// Setting db connections pool.
-	s.db.SetMaxOpenConns(25)
-	s.db.SetMaxIdleConns(25)
-	s.db.SetConnMaxLifetime(5 * time.Minute)
+	s.db.SetMaxOpenConns(maxOpenConns)
+	s.db.SetMaxIdleConns(maxIdleConns)
+	s.db.SetConnMaxLifetime(connMaxLifetime)
 
 	return nil
 }
@@ -83,7 +91,7 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 	var err error
 	fmtStrErr := "prepare \"%s\" query: %w"
 
-	sqlInsertWallet := `
+	const sqlInsertWallet = `
 		INSERT INTO wallets (
 			balance
 		)
@@ -93,7 +101,7 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf(fmtStrErr, "insertWallet", err)
 	}
-	sqlGetBalance := `
+	const sqlGetBalance = `
 		SELECT balance
 		FROM wallets
 		WHERE id = $1`
@@ -102,7 +110,7 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 		return fmt.Errorf(fmtStrErr, "getBalance", err)
 	}
 
-	sqlGetHistory := `
+	const sqlGetHistory = `
 		SELECT time, from_wallet_id, to_wallet_id, amount
 		FROM transactions 
 		WHERE from_wallet_id = $1 OR to_wallet_id = $1
@@ -112,12 +120,34 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 		return fmt.Errorf(fmtStrErr, "getHistory", err)
 	}
 
+	const sqlSend = "CALL transfer($1, $2, $3)"
+	s.send, err = s.db.PrepareContext(ctx, sqlSend)
+	if err != nil {
+		return fmt.Errorf(fmtStrErr, "withdraw", err)
+	}
+
+	const sqlWithdraw = "CALL withdraw($1, $2)"
+	s.withdraw, err = s.db.PrepareContext(ctx, sqlWithdraw)
+	if err != nil {
+		return fmt.Errorf(fmtStrErr, "withdraw", err)
+	}
+
+	const sqlDeposit = "CALL deposit($1, $2)"
+	s.deposit, err = s.db.PrepareContext(ctx, sqlDeposit)
+	if err != nil {
+		return fmt.Errorf(fmtStrErr, "deposit", err)
+	}
+
 	return nil
 }
 
 func (s *Storage) Close() error {
 	s.insertWallet.Close()
 	s.getBalance.Close()
+
+	s.send.Close()
+	s.withdraw.Close()
+	s.deposit.Close()
 
 	s.getHistory.Close()
 

@@ -25,7 +25,7 @@ type ResponseHistory struct {
 
 func New(historyGetter WalletHistory) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		strWalletID := req.URL.Path[15:51]
+		strWalletID := req.PathValue("walletID")
 		walletID, err := uuid.Parse(strWalletID)
 		if err != nil {
 			err := fmt.Errorf("can't get parse uuid: %w", err)

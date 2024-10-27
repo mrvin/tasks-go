@@ -1,4 +1,4 @@
-package send
+package withdraw
 
 import (
 	"context"
@@ -10,21 +10,18 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/mrvin/tasks-go/e-wallet/internal/storage"
-	sqlstorage "github.com/mrvin/tasks-go/e-wallet/internal/storage/sql"
 	httpresponse "github.com/mrvin/tasks-go/e-wallet/pkg/http/response"
 )
 
-type WalletSender interface {
-	Send(ctx context.Context, transaction storage.Transaction) error
+type WalletWithdrawer interface {
+	Withdraw(ctx context.Context, walletID uuid.UUID, amount float64) error
 }
 
-type RequestSend struct {
-	To     uuid.UUID `json:"to"`
-	Amount float64   `json:"amount"`
+type RequestWithdraw struct {
+	Amount float64 `json:"amount"`
 }
 
-func New(sender WalletSender) http.HandlerFunc {
+func New(withdrawer WalletWithdrawer) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		strWalletID := req.PathValue("walletID")
 		walletIDFrom, err := uuid.Parse(strWalletID)
@@ -34,9 +31,8 @@ func New(sender WalletSender) http.HandlerFunc {
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		// Read json request
-		var request RequestSend
+		var request RequestWithdraw
 
 		body, err := io.ReadAll(req.Body)
 		defer req.Body.Close()
@@ -61,30 +57,13 @@ func New(sender WalletSender) http.HandlerFunc {
 			return
 		}
 
-		//nolint:exhaustruct
-		transaction := storage.Transaction{
-			WalletIDFrom: walletIDFrom,
-			WalletIDTo:   request.To,
-			Amount:       request.Amount,
-		}
-
-		if err := sender.Send(req.Context(), transaction); err != nil {
-			err := fmt.Errorf("send transaction: %w", err)
-			slog.Error(err.Error())
-			if errors.Is(err, sqlstorage.ErrNoWalletIDFrom) {
-				httpresponse.WriteError(res, err.Error(), http.StatusNotFound)
-				return
-			}
-			if errors.Is(err, sqlstorage.ErrNoWalletIDTo) || errors.Is(err, sqlstorage.ErrNotEnoughFunds) {
-				httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
-				return
-			}
+		if err := withdrawer.Withdraw(req.Context(), walletIDFrom, request.Amount); err != nil {
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		httpresponse.WriteOK(res, http.StatusOK)
 
-		slog.Info("Transaction was successful")
+		slog.Info("Funds were debited successfully")
 	}
 }

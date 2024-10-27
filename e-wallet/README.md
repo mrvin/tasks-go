@@ -1,6 +1,8 @@
 ## Сервис электронный кошелек
 
-Необходимо разработать приложение EWallet реализующее систему обработки транзакций платёжной системы. Приложение должно быть реализовано в виде HTTP сервера, реализующее REST API. Сервер должен реализовать 4 метода и их логику:
+Необходимо разработать приложение EWallet реализующее систему обработки транзакций 
+платёжной системы. Приложение должно быть реализовано в виде HTTP сервера, реализующее 
+REST API. Сервер должен реализовывать 6 методов и их логику:
 
 #### Создание кошелька
  - Эндпоинт: POST /api/v1/wallet
@@ -19,6 +21,18 @@
  - Статус ответа 200 если перевод успешен
  - Статус ответа 404 если исходящий кошелек не найден
  - Статус ответа 400 если целевой кошелек не найден или на исходящем нет нужной суммы
+#### Пополнение баланса кошелька
+ - Эндпоинт - POST /api/v1/wallet/{walletId}/deposit
+ - Параметры запроса:
+    - walletId – строковый ID кошелька, указан в пути запроса
+    - JSON-объект в теле запроса с параметрами:
+        - amount – сумма пополнения
+#### Cнятие средств с баланса кошелька
+ - Эндпоинт - POST /api/v1/wallet/{walletId}/withdraw
+ - Параметры запроса:
+    - walletId – строковый ID кошелька, указан в пути запроса
+    - JSON-объект в теле запроса с параметрами:
+        - amount – сумма снятия
 #### Получение историй входящих и исходящих транзакций
  - Эндпоинт – GET /api/v1/wallet/{walletId}/history
  - Параметры запроса:
@@ -46,17 +60,20 @@ $ make build
 $ make up
 ...............
 ```
+
 ### Пример использования http API
 ```bash
 $ curl -i -X POST http://localhost:8088/api/v1/wallet
-{"id":"989e230a-7738-4449-8ad1-684c1f201142","balance":100,"status":"OK"}
+{"id":"ce286e81-3470-411b-a6ac-6257724bbf20","balance":100,"status":"OK"}
 $ curl -i -X POST http://localhost:8088/api/v1/wallet
-{"id":"a2c3b089-6186-43b5-bb8b-a5b07f965168","balance":100,"status":"OK"}
-$ curl -i -X POST 'http://localhost:8088/api/v1/wallet/989e230a-7738-4449-8ad1-684c1f201142/send' -H "Content-Type: application/json" -d '{"to":"a2c3b089-6186-43b5-bb8b-a5b07f965168","amount":12.15}'
-$ curl -i -X GET http://localhost:8088/api/v1/wallet/989e230a-7738-4449-8ad1-684c1f201142
-{"id":"989e230a-7738-4449-8ad1-684c1f201142","balance":87.85,"status":"OK"}
-$ curl -i -X GET http://localhost:8088/api/v1/wallet/a2c3b089-6186-43b5-bb8b-a5b07f965168
+{"id":"f0b6dfcd-0464-4976-9a9f-fc7382560841","balance":100,"status":"OK"}
+$ curl -i -X POST 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/send' -H "Content-Type: application/json" -d '{"to":"f0b6dfcd-0464-4976-9a9f-fc7382560841","amount":12.15}'
+$ curl -i -X POST 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/deposit' -H "Content-Type: application/json" -d '{"amount":120.22}'
+$ curl -i -X POST 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/withdraw' -H "Content-Type: application/json" -d '{"amount":22.00}'
+$ curl -i -X GET http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20
+{"id":"989e230a-7738-4449-8ad1-684c1f201142","balance":186.07,"status":"OK"}
+$ curl -i -X GET http://localhost:8088/api/v1/wallet/f0b6dfcd-0464-4976-9a9f-fc7382560841
 {"id":"a2c3b089-6186-43b5-bb8b-a5b07f965168","balance":112.15,"status":"OK"}
-$ curl -i -X GET 'http://localhost:8088/api/v1/wallet/a2c3b089-6186-43b5-bb8b-a5b07f965168/history'
-{"transactions":[{"time":"2024-01-18T17:55:04.067598+03:00","from":"989e230a-7738-4449-8ad1-684c1f201142","to":"a2c3b089-6186-43b5-bb8b-a5b07f965168","amount":12.15}],"status":"OK"}
+$ curl -i -X GET 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/history'
+{"transactions":[{"time":"2024-10-27T15:09:35.700113Z","from":"ce286e81-3470-411b-a6ac-6257724bbf20","to":"f0b6dfcd-0464-4976-9a9f-fc7382560841","amount":12.15},{"time":"2024-10-27T15:11:10.481953Z","from":"00000000-0000-0000-0000-000000000000","to":"ce286e81-3470-411b-a6ac-6257724bbf20","amount":120.22},{"time":"2024-10-27T15:11:38.781783Z","from":"ce286e81-3470-411b-a6ac-6257724bbf20","to":"00000000-0000-0000-0000-000000000000","amount":22}],"status":"OK"}
 ```
