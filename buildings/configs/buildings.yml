@@ -1,0 +1,12 @@
+# HTTP server setting
+http:
+    host: buildings-server
+    port: 8081
+
+# database settings
+db:
+    host: postgres
+    port: 5432
+    user: buildings-user
+    password: buildings-user
+    name: buildings-db

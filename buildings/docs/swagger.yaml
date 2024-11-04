@@ -1,0 +1,76 @@
+definitions:
+  storage.Building:
+    properties:
+      city:
+        example: Saint Petersburg
+        type: string
+      id:
+        example: 0
+        type: integer
+      name:
+        example: 'Building #1'
+        type: string
+      number_floors:
+        example: 22
+        type: integer
+      year:
+        example: 2022
+        type: integer
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: This is a sample server buildings server.
+  title: Buildings API
+  version: "1.0"
+paths:
+  /buildings:
+    get:
+      description: get buildings
+      parameters:
+      - description: equal city
+        in: query
+        name: city
+        type: string
+      - description: equal year
+        in: query
+        name: year
+        type: string
+      - description: equal number_floors
+        in: query
+        name: number_floors
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/storage.Building'
+            type: array
+      summary: List buildings
+      tags:
+      - buildings
+    post:
+      consumes:
+      - application/json
+      description: create new building
+      parameters:
+      - description: building data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/storage.Building'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: OK
+          schema:
+            type: string
+      summary: Create building
+      tags:
+      - buildings
+swagger: "2.0"

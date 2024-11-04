@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS buildings;
+
+DROP INDEX IF EXISTS idx_city;
+DROP INDEX IF EXISTS idx_year;
+DROP INDEX IF EXISTS idx_number_floors;
