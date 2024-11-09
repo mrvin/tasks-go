@@ -37,7 +37,6 @@
  - Запуск сервиса и требуемой ему инфраструктуры должен производиться в Docker контейнерах.
 
 ### Сборка и запуск приложения в Docker Compose
-
 ```shell script
 $ make build
 ...............
@@ -59,3 +58,5 @@ $ curl --user Alice:password123 -i -X GET 'http://localhost:8088/notes'
 
 ### Полезные ссылки
 - [Аутентификация в API](https://starkovden.github.io/authentication-and-authorization.html)
+- [Курс на stepik.org "Быстрый бекенд для заметок"](https://stepik.org/course/199801/promo)
+

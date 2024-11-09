@@ -1,5 +1,5 @@
 ## Build
-FROM golang:1.23.0-alpine AS build
+FROM golang:1.23.3-alpine AS build
 
 LABEL maintainer="mrvin v.v.vinogradovv@gmail.com"
 
@@ -14,7 +14,7 @@ COPY pkg pkg
 
 # Copy and download dependency using go mod.
 COPY go.mod go.sum ./
-#RUN go mod download
+RUN go mod download
 
 RUN cd cmd/notes-server/ && make build
 
