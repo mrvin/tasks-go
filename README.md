@@ -15,4 +15,5 @@
 13. [identidock](./identidock) -  веб-приложение identidock, HTML form. Кэширование в Redis, Docker Compose;
 14. [photo-gallery](./photo-gallery) - сервис фотогалерея, API: HTTP/REST, SQLite;
 15. [notes](./notes) - сервис заметки, API: HTTP/REST, PostgreSQL, Basic Auth, Docker Compose;
-16. [get-film-info-all](./003-get-film-info-all)
+16. [buildings](./buildings) - сервис для хранения информации о строениях, API: HTTP/REST(Gin), PostgreSQL(squirrel), Docker Compose, OpenApi документация.
+
