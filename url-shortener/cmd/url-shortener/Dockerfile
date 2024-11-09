@@ -16,9 +16,6 @@ COPY pkg pkg
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Download necessary Go modules
-RUN go mod download
-
 RUN cd cmd/url-shortener/ && make build
 
 ## Deploy
