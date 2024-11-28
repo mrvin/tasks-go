@@ -1,7 +1,7 @@
 ## Build
-FROM golang:1.22.6-alpine AS build
+FROM golang:1.23.3-alpine AS build
 
-MAINTAINER mrvin <v.v.vinogradovv@gmail.com>
+LABEL maintainer="mrvin v.v.vinogradovv@gmail.com"
 
 RUN apk update && apk add make && apk add ca-certificates && apk add tzdata
 
@@ -27,6 +27,6 @@ COPY --from=build ["/usr/share/zoneinfo", "/usr/share/zoneinfo"]
 COPY --from=build ["/etc/ssl/certs/ca-certificates.crt", "/etc/ssl/certs/ca-certificates.crt"]
 COPY --from=build ["/app/bin/hh-client-go", "/usr/local/bin/hh-client-go"]
 
-ENV TZ Europe/Moscow
+ENV TZ=Europe/Moscow
 
 ENTRYPOINT ["/usr/local/bin/hh-client-go"]

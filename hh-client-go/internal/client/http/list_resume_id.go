@@ -31,7 +31,9 @@ func (c *Client) ListResumeID(ctx context.Context) ([]string, error) {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
+	c.mutexUserAuth.RLock()
 	bearer := "Bearer " + c.userAuth.accessToken
+	c.mutexUserAuth.RUnlock()
 	req.Header.Add("Authorization", bearer)
 	req.Header.Add("HH-User-Agent", c.hhUserAgent) //nolint:canonicalheader
 

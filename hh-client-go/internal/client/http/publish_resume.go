@@ -66,7 +66,9 @@ func (c *Client) PublishResume(ctx context.Context, resumeID string) error {
 		return fmt.Errorf("create request: %w", err)
 	}
 
+	c.mutexUserAuth.RLock()
 	bearer := "Bearer " + c.userAuth.accessToken
+	c.mutexUserAuth.RUnlock()
 	req.Header.Add("Authorization", bearer)
 	req.Header.Add("HH-User-Agent", c.hhUserAgent) //nolint:canonicalheader
 

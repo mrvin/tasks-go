@@ -3,7 +3,10 @@ package httpclient
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"sync"
+	"time"
 )
 
 const requestTimeout = 10
@@ -23,21 +26,29 @@ type AppInfo struct {
 
 type Client struct {
 	http.Client
-	userAuth    *auth
-	hhUserAgent string
+	hhUserAgent   string
+	userAuth      *auth
+	mutexUserAuth sync.RWMutex
 }
 
 func New(ctx context.Context, confHH *ConfAPIhh, appInfo *AppInfo) (*Client, error) {
-	var err error
 	var client Client
 
 	client.hhUserAgent = appInfo.Name + "/" + appInfo.Version + " (" + appInfo.Email + ")"
 
-	client.userAuth, err = client.getToken(ctx, confHH.ClientID, confHH.ClientSecret, confHH.AuthorizationCode)
+	userAuth, err := client.getToken(ctx, confHH.ClientID, confHH.ClientSecret, confHH.AuthorizationCode)
 	if err != nil {
 		return nil, fmt.Errorf("get token: %w", err)
 	}
+	client.mutexUserAuth.Lock()
+	client.userAuth = userAuth
+	client.mutexUserAuth.Unlock()
+
+	client.mutexUserAuth.RLock()
 	fmt.Println(client.userAuth)
+	time.AfterFunc(client.userAuth.expiresIn, client.refreshToken)
+	slog.Info("Refresh token will start", slog.String("duration", client.userAuth.expiresIn.String()))
+	client.mutexUserAuth.RUnlock()
 
 	return &client, nil
 }

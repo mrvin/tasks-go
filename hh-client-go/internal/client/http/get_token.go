@@ -27,7 +27,7 @@ type errorGetToken struct {
 type auth struct {
 	accessToken  string
 	refreshToken string
-	expiresAt    time.Time
+	expiresIn    time.Duration
 }
 
 func (c *Client) getToken(ctx context.Context, clientID, clientSecret, code string) (*auth, error) {
@@ -36,7 +36,15 @@ func (c *Client) getToken(ctx context.Context, clientID, clientSecret, code stri
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout*time.Second)
 	defer cancel()
 
-	data := bytes.NewBufferString("grant_type=authorization_code&client_id=" + clientID + "&client_secret=" + clientSecret + "&code=" + code)
+	var data *bytes.Buffer
+	if clientID == "" || clientSecret == "" || code == "" {
+		c.mutexUserAuth.RLock()
+		data = bytes.NewBufferString("grant_type=refresh_token&refresh_token=" + c.userAuth.refreshToken)
+		c.mutexUserAuth.RUnlock()
+	} else {
+		data = bytes.NewBufferString("grant_type=authorization_code&client_id=" + clientID + "&client_secret=" + clientSecret + "&code=" + code)
+	}
+
 	// Create a new request using http
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, data)
 	if err != nil {
@@ -79,6 +87,6 @@ func (c *Client) getToken(ctx context.Context, clientID, clientSecret, code stri
 	return &auth{
 		accessToken:  respData.AccessToken,
 		refreshToken: respData.RefreshToken,
-		expiresAt:    time.Now().Add(time.Second * time.Duration(respData.ExpiresIn)),
+		expiresIn:    time.Second * time.Duration(respData.ExpiresIn),
 	}, nil
 }
