@@ -36,9 +36,10 @@ func TestBalance(t *testing.T) {
 			response:    `{"status":"Error","error":"get balance: no wallet with id"}`,
 		},
 	}
-	mockBalanceGetter := mocks.NewWalletBalance()
 
-	handlerBalance := New(mockBalanceGetter)
+	mux := http.NewServeMux()
+	mockBalanceGetter := mocks.NewWalletBalance()
+	mux.HandleFunc(http.MethodGet+" /api/v1/wallet/"+"{walletID}", New(mockBalanceGetter))
 	for _, test := range tests {
 		req, err := http.NewRequest(http.MethodGet, "/api/v1/wallet/"+test.walletID, nil)
 		if err != nil {
@@ -49,7 +50,7 @@ func TestBalance(t *testing.T) {
 			Return(test.mockBalance, test.mockError)
 
 		res := httptest.NewRecorder()
-		handlerBalance(res, req)
+		mux.ServeHTTP(res, req)
 
 		if res.Code != test.httpStatus {
 			t.Errorf("response code is %d; want: %d", res.Code, test.httpStatus)

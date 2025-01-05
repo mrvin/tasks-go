@@ -22,5 +22,5 @@ func (m *WalletSender) Send(ctx context.Context, transaction storage.Transaction
 		panic("no return value specified for Send")
 	}
 
-	return args.Error(0)
+	return args.Error(0) //nolint: wrapcheck
 }

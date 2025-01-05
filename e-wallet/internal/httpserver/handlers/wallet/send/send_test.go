@@ -52,9 +52,9 @@ func TestSend(t *testing.T) {
 		},
 	}
 
+	mux := http.NewServeMux()
 	mockWalletSender := mocks.NewWalletSender()
-
-	handlerSend := New(mockWalletSender)
+	mux.HandleFunc(http.MethodPost+" /api/v1/wallet/{walletID}/send", New(mockWalletSender))
 	for _, test := range tests {
 
 		dataRequestSend, err := json.Marshal(RequestSend{To: uuid.Must(uuid.Parse(test.walletIDTo)), Amount: test.amount})
@@ -76,7 +76,7 @@ func TestSend(t *testing.T) {
 			Return(test.mockError)
 
 		res := httptest.NewRecorder()
-		handlerSend(res, req)
+		mux.ServeHTTP(res, req)
 
 		if res.Code != test.httpStatus {
 			t.Errorf("response code is %d; want: %d", res.Code, test.httpStatus)

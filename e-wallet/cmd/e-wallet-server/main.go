@@ -15,10 +15,12 @@ import (
 	sqlstorage "github.com/mrvin/tasks-go/e-wallet/internal/storage/sql"
 )
 
+//nolint:tagliatelle
 type Config struct {
-	DB     sqlstorage.Conf `yaml:"db"`
-	HTTP   httpserver.Conf `yaml:"http"`
-	Logger logger.Conf     `yaml:"logger"`
+	MinimalAmount float64         `yaml:"minimal_amount"`
+	DB            sqlstorage.Conf `yaml:"db"`
+	HTTP          httpserver.Conf `yaml:"http"`
+	Logger        logger.Conf     `yaml:"logger"`
 }
 
 func main() {
@@ -59,7 +61,7 @@ func main() {
 		}
 	}()
 
-	serverHTTP := httpserver.New(&conf.HTTP, storage)
+	serverHTTP := httpserver.New(&conf.HTTP, conf.MinimalAmount, storage)
 
 	ctx, cancel := signal.NotifyContext(
 		ctx,

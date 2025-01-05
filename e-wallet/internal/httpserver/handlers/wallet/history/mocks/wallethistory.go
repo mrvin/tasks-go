@@ -22,6 +22,10 @@ func (m *WalletHistory) HistoryTransactions(ctx context.Context, walletID uuid.U
 	if len(args) == 0 {
 		panic("no return value specified for HistoryTransactions")
 	}
+	slTransactions, ok := args.Get(0).([]storage.Transaction)
+	if !ok {
+		panic("return value of wrong type")
+	}
 
-	return args.Get(0).([]storage.Transaction), args.Error(1)
+	return slTransactions, args.Error(1) //nolint: wrapcheck
 }

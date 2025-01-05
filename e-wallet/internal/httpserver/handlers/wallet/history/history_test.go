@@ -46,9 +46,9 @@ func TestHistory(t *testing.T) {
 		},
 	}
 
+	mux := http.NewServeMux()
 	mockWalletHistory := mocks.NewWalletHistory()
-
-	handlerHistory := New(mockWalletHistory)
+	mux.HandleFunc(http.MethodGet+" /api/v1/wallet/{walletID}/history", New(mockWalletHistory))
 	for _, test := range tests {
 		req, err := http.NewRequest(http.MethodGet, "/api/v1/wallet/"+test.walletID+"/history", nil)
 		if err != nil {
@@ -58,7 +58,7 @@ func TestHistory(t *testing.T) {
 			Return(test.mockTransactions, test.mockError)
 
 		res := httptest.NewRecorder()
-		handlerHistory(res, req)
+		mux.ServeHTTP(res, req)
 
 		if res.Code != test.httpStatus {
 			t.Errorf("response code is %d; want: %d", res.Code, test.httpStatus)

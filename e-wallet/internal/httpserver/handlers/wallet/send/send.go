@@ -24,7 +24,7 @@ type RequestSend struct {
 	Amount float64   `json:"amount"`
 }
 
-func New(sender WalletSender) http.HandlerFunc {
+func New(sender WalletSender, minimalAmount float64) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		strWalletID := req.PathValue("walletID")
 		walletIDFrom, err := uuid.Parse(strWalletID)
@@ -54,7 +54,7 @@ func New(sender WalletSender) http.HandlerFunc {
 			return
 		}
 
-		if request.Amount < 0.01 {
+		if request.Amount < minimalAmount {
 			err := errors.New("amount is too small")
 			slog.Error(err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)

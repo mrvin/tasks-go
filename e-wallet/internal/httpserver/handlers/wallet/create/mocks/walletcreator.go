@@ -21,6 +21,10 @@ func (m *WalletCreator) Create(ctx context.Context, balance float64) (uuid.UUID,
 	if len(args) == 0 {
 		panic("no return value specified for Create")
 	}
+	id, ok := args.Get(0).(uuid.UUID)
+	if !ok {
+		panic("return value of wrong type")
+	}
 
-	return args.Get(0).(uuid.UUID), args.Error(1)
+	return id, args.Error(1) //nolint: wrapcheck
 }

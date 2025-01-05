@@ -21,6 +21,10 @@ func (m *WalletBalance) Balance(ctx context.Context, walletID uuid.UUID) (float6
 	if len(args) == 0 {
 		panic("no return value specified for Balance")
 	}
+	balance, ok := args.Get(0).(float64)
+	if !ok {
+		panic("return value of wrong type")
+	}
 
-	return args.Get(0).(float64), args.Error(1)
+	return balance, args.Error(1) //nolint: wrapcheck
 }

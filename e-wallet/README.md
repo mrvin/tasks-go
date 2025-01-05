@@ -11,6 +11,18 @@ REST API. Сервер должен реализовывать 6 методов 
     - id – строковый ID кошелька. Генерируется сервером
     - balance – дробное число, баланс кошелька
  - Созданный кошелек должен иметь сумму 100.0 у.е. на балансе
+
+##### Пример
+```bash
+$ curl -i -X POST http://localhost:8088/api/v1/wallet
+
+{
+  	"id": "03cfa469-4e87-4662-8eec-ca36ae4faa31",
+  	"balance": 100,
+  	"status": "OK"
+}
+```
+
 #### Перевод средств с одного кошелька на другой
  - Эндпоинт - POST /api/v1/wallet/{walletId}/send
  - Параметры запроса:
@@ -21,18 +33,61 @@ REST API. Сервер должен реализовывать 6 методов 
  - Статус ответа 200 если перевод успешен
  - Статус ответа 404 если исходящий кошелек не найден
  - Статус ответа 400 если целевой кошелек не найден или на исходящем нет нужной суммы
+
+##### Пример
+```bash
+$ curl -i -X POST 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/send' \
+-H "Content-Type: application/json" \
+-d '{
+	"to":"f0b6dfcd-0464-4976-9a9f-fc7382560841",
+	"amount":12.15
+}'
+
+{
+  	"status": "OK"
+}
+```
+
 #### Пополнение баланса кошелька
  - Эндпоинт - POST /api/v1/wallet/{walletId}/deposit
  - Параметры запроса:
     - walletId – строковый ID кошелька, указан в пути запроса
     - JSON-объект в теле запроса с параметрами:
         - amount – сумма пополнения
+
+##### Пример
+```bash
+$ curl -i -X POST 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/deposit' \
+-H "Content-Type: application/json" \
+-d '{
+	"amount":120.22
+}'
+
+{
+  	"status": "OK"
+}
+```
+
 #### Cнятие средств с баланса кошелька
  - Эндпоинт - POST /api/v1/wallet/{walletId}/withdraw
  - Параметры запроса:
     - walletId – строковый ID кошелька, указан в пути запроса
     - JSON-объект в теле запроса с параметрами:
         - amount – сумма снятия
+
+##### Пример
+```bash
+$ curl -i -X POST 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/withdraw' \
+-H "Content-Type: application/json" \
+-d '{
+	"amount":22.00
+}'
+
+{
+  	"status": "OK"
+}
+```
+
 #### Получение историй входящих и исходящих транзакций
  - Эндпоинт – GET /api/v1/wallet/{walletId}/history
  - Параметры запроса:
@@ -43,6 +98,53 @@ REST API. Сервер должен реализовывать 6 методов 
     - to – ID входящего кошелька
     - amount – сумма перевода. Дробное число
  - Статус ответа 404 если указанный кошелек не найден
+
+##### Пример
+```bash
+$ curl -i -X GET 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/history'
+
+{
+  "transactions": [
+    {
+      "time": "2024-10-27T15:09:35.700113Z",
+      "from": "ce286e81-3470-411b-a6ac-6257724bbf20",
+      "to": "f0b6dfcd-0464-4976-9a9f-fc7382560841",
+      "amount": 12.15
+    },
+    {
+      "time": "2024-10-27T15:11:10.481953Z",
+      "from": "00000000-0000-0000-0000-000000000000",
+      "to": "ce286e81-3470-411b-a6ac-6257724bbf20",
+      "amount": 120.22
+    },
+    {
+      "time": "2024-10-27T15:11:38.781783Z",
+      "from": "ce286e81-3470-411b-a6ac-6257724bbf20",
+      "to": "00000000-0000-0000-0000-000000000000",
+      "amount": 22
+    },
+    {
+      "time": "2025-01-05T17:00:56.826392Z",
+      "from": "ce286e81-3470-411b-a6ac-6257724bbf20",
+      "to": "f0b6dfcd-0464-4976-9a9f-fc7382560841",
+      "amount": 12.15
+    },
+    {
+      "time": "2025-01-05T17:05:14.614078Z",
+      "from": "00000000-0000-0000-0000-000000000000",
+      "to": "ce286e81-3470-411b-a6ac-6257724bbf20",
+      "amount": 120.22
+    },
+    {
+      "time": "2025-01-05T17:08:54.764552Z",
+      "from": "ce286e81-3470-411b-a6ac-6257724bbf20",
+      "to": "00000000-0000-0000-0000-000000000000",
+      "amount": 22
+    }
+  ],
+  "status": "OK"
+}
+```
 #### Получение текущего состояния кошелька
  - Эндпоинт – GET /api/v1/wallet/{walletId}
  - Параметры запроса:
@@ -51,6 +153,17 @@ REST API. Сервер должен реализовывать 6 методов 
     - id – строковый ID кошелька. Генерируется сервером
     - balance – дробное число, баланс кошелька
  - Статус ответа 404 если кошелек не найден
+```
+
+##### Пример
+$ curl -i -X GET http://localhost:8088/api/v1/wallet/f0b6dfcd-0464-4976-9a9f-fc7382560841
+
+{
+  "id": "f0b6dfcd-0464-4976-9a9f-fc7382560841",
+  "balance": 124.3,
+  "status": "OK"
+}
+```
 
 ### Сборка и запуск приложения в Docker Compose
 
@@ -61,19 +174,8 @@ $ make up
 ...............
 ```
 
-### Пример использования http API
-```bash
-$ curl -i -X POST http://localhost:8088/api/v1/wallet
-{"id":"ce286e81-3470-411b-a6ac-6257724bbf20","balance":100,"status":"OK"}
-$ curl -i -X POST http://localhost:8088/api/v1/wallet
-{"id":"f0b6dfcd-0464-4976-9a9f-fc7382560841","balance":100,"status":"OK"}
-$ curl -i -X POST 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/send' -H "Content-Type: application/json" -d '{"to":"f0b6dfcd-0464-4976-9a9f-fc7382560841","amount":12.15}'
-$ curl -i -X POST 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/deposit' -H "Content-Type: application/json" -d '{"amount":120.22}'
-$ curl -i -X POST 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/withdraw' -H "Content-Type: application/json" -d '{"amount":22.00}'
-$ curl -i -X GET http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20
-{"id":"989e230a-7738-4449-8ad1-684c1f201142","balance":186.07,"status":"OK"}
-$ curl -i -X GET http://localhost:8088/api/v1/wallet/f0b6dfcd-0464-4976-9a9f-fc7382560841
-{"id":"a2c3b089-6186-43b5-bb8b-a5b07f965168","balance":112.15,"status":"OK"}
-$ curl -i -X GET 'http://localhost:8088/api/v1/wallet/ce286e81-3470-411b-a6ac-6257724bbf20/history'
-{"transactions":[{"time":"2024-10-27T15:09:35.700113Z","from":"ce286e81-3470-411b-a6ac-6257724bbf20","to":"f0b6dfcd-0464-4976-9a9f-fc7382560841","amount":12.15},{"time":"2024-10-27T15:11:10.481953Z","from":"00000000-0000-0000-0000-000000000000","to":"ce286e81-3470-411b-a6ac-6257724bbf20","amount":120.22},{"time":"2024-10-27T15:11:38.781783Z","from":"ce286e81-3470-411b-a6ac-6257724bbf20","to":"00000000-0000-0000-0000-000000000000","amount":22}],"status":"OK"}
-```
+Todo list:
+ - реализовать тесты для 'deposit' и 'withdraw' обработчиков;
+ - добавить OpenAPI документацию;
+ - добавить параметры От, До для 'history' обработчика;
+ - вынести 'StartingBalance' в конфигурацию.

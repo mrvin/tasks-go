@@ -1,3 +1,6 @@
+# App setting
+minimal_amount: 0.01
+
 # HTTP server setting
 http:
     host: localhost
