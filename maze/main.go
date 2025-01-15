@@ -45,23 +45,15 @@ func main() {
 		return
 	}
 
-	paths, sums := BFS(maze, start, finish)
+	path, sum := BruteForceBFS(maze, start, finish)
 
-	minSum := math.MaxInt
-	indexMinSum := -1
-	for i, sum := range sums {
-		if sum < minSum {
-			indexMinSum = i
-			minSum = sum
-		}
-	}
-	if minSum == math.MaxInt && indexMinSum == -1 {
+	if sum == math.MaxInt {
 		log.Print("path does not exist")
 		return
 	}
-	for _, c := range paths[indexMinSum] {
+	for _, c := range path {
 		fmt.Fprintf(out, "%d %d\n", c.i, c.j)
 	}
 	fmt.Fprintf(out, ".\n")
-	fmt.Fprintf(out, "sum: %d\n", minSum)
+	fmt.Fprintf(out, "sum: %d\n", sum)
 }
