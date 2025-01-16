@@ -56,5 +56,11 @@ $ make build
 
 ### Пример использования
 ```bash
-$ ./shortest-path < testdata/test-01.txt
+$ ./shortest-path < testdata/test-01.txt > result.txt
+$ cmp result.txt testdata/result-01.txt
+$ rm result.txt
 ```
+
+### Полезные ссылки
+- [Maze-solving algorithm](https://en.wikipedia.org/wiki/Maze-solving_algorithm)
+- [Lee algorithm](https://en.wikipedia.org/wiki/Lee_algorithm)
