@@ -52,13 +52,33 @@
 ### Сборка приложения
 ```shell script
 $ make build
+go build -o shortest-path -ldflags '-w -s'
+```
+### Установка приложения
+```shell script
+go install -ldflags '-w -s' github.com/mrvin/tasks-go/maze@latest
 ```
 
-### Пример использования
-```bash
-$ ./shortest-path < testdata/test-01.txt > result.txt
-$ cmp result.txt testdata/result-01.txt
-$ rm result.txt
+### Запуск тестов
+```shell script
+$ ./test.sh
++ make build
+go build -o shortest-path -ldflags '-w -s'
++ ./shortest-path
++ cmp result.txt testdata/result-01.txt
++ ./shortest-path
++ cmp result.txt testdata/result-02.txt
++ ./shortest-path
++ cmp result.txt testdata/result-03.txt
++ ./shortest-path
++ cmp result.txt testdata/result-04.txt
++ ./shortest-path
++ cmp result.txt testdata/result-05.txt
++ ./shortest-path
++ cmp result.txt testdata/result-06.txt
++ rm -f shortest-path result.txt
++ echo PASS
+PASS
 ```
 
 ### Полезные ссылки
