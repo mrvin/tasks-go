@@ -54,9 +54,10 @@
 $ make build
 go build -o shortest-path -ldflags '-w -s'
 ```
+
 ### Установка приложения
 ```shell script
-go install -ldflags '-w -s' github.com/mrvin/tasks-go/maze@latest
+$ go install -ldflags '-w -s' github.com/mrvin/tasks-go/maze@latest
 ```
 
 ### Запуск тестов
