@@ -1,6 +1,6 @@
 package main
 
-// Queue очередь на основе слайса
+// Queue очередь на основе слайса.
 type Queue struct {
 	sl []Cell
 }
@@ -15,7 +15,7 @@ func (q *Queue) IsEmpty() bool {
 	return len(q.sl) == 0
 }
 
-// Dequeue убрать элемент из начала очереди. При этом выбранный элемент из очереди
+// Dequeue возвращает элемент из начала очереди. При этом выбранный элемент из очереди
 // удаляется.
 func (q *Queue) Dequeue() (Cell, bool) {
 	if q.IsEmpty() {

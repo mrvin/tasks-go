@@ -11,23 +11,23 @@ import (
 // равную 0.
 func LeeWithWeight(maze [][]uint8, start, finish Cell) ([]Cell, int) {
 	// Инициализация
-	mazeMinPathLen := make([][]int, len(maze))
-	for i := range mazeMinPathLen {
-		mazeMinPathLen[i] = make([]int, len(maze[i]))
+	mazeExitMap := make([][]int, len(maze))
+	for i := range mazeExitMap {
+		mazeExitMap[i] = make([]int, len(maze[i]))
 	}
 	resultMinPathLen := math.MaxInt
 
 	// Распространение волны
 	var queue Queue
-	mazeMinPathLen[finish.i][finish.j] = int(maze[finish.i][finish.j])
+	mazeExitMap[finish.i][finish.j] = int(maze[finish.i][finish.j])
 	queue.Enqueue([]Cell{finish})
 	for !queue.IsEmpty() {
 		stand, _ := queue.Dequeue()
 		if stand == start {
-			resultMinPathLen = mazeMinPathLen[start.i][start.j]
+			resultMinPathLen = mazeExitMap[start.i][start.j]
 			continue
 		}
-		cells := visit(maze, mazeMinPathLen, stand, resultMinPathLen)
+		cells := visitNeighbors(maze, mazeExitMap, stand, resultMinPathLen)
 		queue.Enqueue(cells)
 	}
 
@@ -40,7 +40,7 @@ func LeeWithWeight(maze [][]uint8, start, finish Cell) ([]Cell, int) {
 			break // Путь найден.
 		}
 		var ok bool
-		stand, ok = nextMinPathLenCell(mazeMinPathLen, stand)
+		stand, ok = nextMinPathLenCell(mazeExitMap, stand)
 		if !ok {
 			return []Cell{}, 0 // Путь не найден.
 		}
@@ -49,90 +49,57 @@ func LeeWithWeight(maze [][]uint8, start, finish Cell) ([]Cell, int) {
 	return resultPath, resultMinPathLen
 }
 
-// visit возвращает слайс клеток в которые доступен переход из клетки stand.
-func visit(maze [][]uint8, mazeMinPathLen [][]int, stand Cell, minPathLen int) []Cell {
+var directions = [4][2]int{
+	{-1, 0}, // Вверх
+	{0, 1},  // Вправо
+	{0, -1}, // Влево
+	{1, 0},  // Вниз
+}
+
+// visitNeighbors возвращает слайс клеток в которые доступен переход из клетки stand.
+func visitNeighbors(maze [][]uint8, mazeExitMap [][]int, stand Cell, minPathLen int) []Cell {
 	i := stand.i
 	j := stand.j
 	cells := make([]Cell, 0)
 
-	// Вверх
-	if i-1 >= 0 && maze[i-1][j] != 0 {
-		newMinPathLen := mazeMinPathLen[i][j] + int(maze[i-1][j])
-		if (mazeMinPathLen[i-1][j] == 0 || newMinPathLen < mazeMinPathLen[i-1][j]) && newMinPathLen < minPathLen {
-			mazeMinPathLen[i-1][j] = newMinPathLen
-			cells = append(cells, Cell{i - 1, j})
-		}
-	}
-	// Вправо
-	if j+1 < len(maze[i]) && maze[i][j+1] != 0 {
-		newMinPathLen := mazeMinPathLen[i][j] + int(maze[i][j+1])
-		if (mazeMinPathLen[i][j+1] == 0 || newMinPathLen < mazeMinPathLen[i][j+1]) && newMinPathLen < minPathLen {
-			mazeMinPathLen[i][j+1] = newMinPathLen
-			cells = append(cells, Cell{i, j + 1})
-		}
-	}
-	// Влево
-	if j-1 >= 0 && maze[i][j-1] != 0 {
-		newMinPathLen := mazeMinPathLen[i][j] + int(maze[i][j-1])
-		if (mazeMinPathLen[i][j-1] == 0 || newMinPathLen < mazeMinPathLen[i][j-1]) && newMinPathLen < minPathLen {
-			mazeMinPathLen[i][j-1] = newMinPathLen
-			cells = append(cells, Cell{i, j - 1})
-		}
-	}
-	// Вниз
-	if i+1 < len(maze) && maze[i+1][j] != 0 {
-		newMinPathLen := mazeMinPathLen[i][j] + int(maze[i+1][j])
-		if (mazeMinPathLen[i+1][j] == 0 || newMinPathLen < mazeMinPathLen[i+1][j]) && newMinPathLen < minPathLen {
-			mazeMinPathLen[i+1][j] = newMinPathLen
-			cells = append(cells, Cell{i + 1, j})
+	for _, d := range directions {
+		di := i + d[0]
+		dj := j + d[1]
+		if 0 <= di && di < len(mazeExitMap) && 0 <= dj && dj < len(mazeExitMap[i]) && maze[di][dj] != 0 {
+			newMinPathLen := mazeExitMap[i][j] + int(maze[di][dj])
+			if (mazeExitMap[di][dj] == 0 || newMinPathLen < mazeExitMap[di][dj]) && newMinPathLen < minPathLen {
+				mazeExitMap[di][dj] = newMinPathLen
+				cells = append(cells, Cell{di, dj})
+			}
 		}
 	}
 
 	return cells
 }
 
-// nextMinSumCell возвращает соседнюю c stand клетку с минимальным растоянием до
+// nextMinPathLenCell возвращает соседнюю c stand клетку с минимальным растоянием до
 // финиша и ok равный true, если такой клетки нет, то возвращает клетку Cell{i:0, j:0}
 // и ok равный false.
-func nextMinPathLenCell(mazeMinPathLen [][]int, stand Cell) (Cell, bool) {
+func nextMinPathLenCell(mazeExitMap [][]int, stand Cell) (Cell, bool) {
 	i := stand.i
 	j := stand.j
 
-	cells := [4]Cell{
-		{i - 1, j}, // Вверх
-		{i, j + 1}, // Вправо
-		{i, j - 1}, // Влево
-		{i + 1, j}, // Вниз
-	}
-	lens := [4]int{math.MaxInt, math.MaxInt, math.MaxInt, math.MaxInt}
-
-	if i-1 >= 0 && mazeMinPathLen[i-1][j] != 0 {
-		lens[0] = mazeMinPathLen[i-1][j]
-	}
-
-	if j+1 < len(mazeMinPathLen[i]) && mazeMinPathLen[i][j+1] != 0 {
-		lens[1] = mazeMinPathLen[i][j+1]
-	}
-
-	if j-1 >= 0 && mazeMinPathLen[i][j-1] != 0 {
-		lens[2] = mazeMinPathLen[i][j-1]
-	}
-
-	if i+1 < len(mazeMinPathLen) && mazeMinPathLen[i+1][j] != 0 {
-		lens[3] = mazeMinPathLen[i+1][j]
-	}
-
+	minI, minJ := 0, 0
 	minLen := math.MaxInt
-	index := 0
-	for i, l := range lens {
-		if l < minLen {
-			index = i
-			minLen = l
+	for _, d := range directions {
+		di := i + d[0]
+		dj := j + d[1]
+		if 0 <= di && di < len(mazeExitMap) && 0 <= dj && dj < len(mazeExitMap[i]) {
+			if mazeExitMap[di][dj] != 0 && mazeExitMap[di][dj] < minLen {
+				minI, minJ = di, dj
+				minLen = mazeExitMap[di][dj]
+			}
 		}
 	}
+
 	if minLen == math.MaxInt {
 		return Cell{}, false //nolint:exhaustruct
 	}
 
-	return cells[index], true
+	return Cell{minI, minJ}, true
 }
