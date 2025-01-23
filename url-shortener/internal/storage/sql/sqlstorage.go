@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/lib/pq"
@@ -174,6 +175,54 @@ func (s *Storage) CreateURL(ctx context.Context, userName, urlToSave, alias stri
 	}
 
 	return nil
+}
+
+func (s *Storage) GetURLOld(ctx context.Context, alias string) (string, error) {
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted, ReadOnly: false})
+	if err != nil {
+		return "", fmt.Errorf("start transaction: %w", err)
+	}
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			if !errors.Is(err, sql.ErrTxDone) {
+				slog.Error("Failed Rollback" + err.Error())
+			}
+		}
+	}()
+
+	var url string
+	const sqlSelectURL = `
+		SELECT url
+		FROM url
+		WHERE alias = $1`
+	if err = tx.QueryRowContext(
+		ctx,
+		sqlSelectURL,
+		alias,
+	).Scan(&url); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", storage.ErrURLNotFound
+		}
+		return "", fmt.Errorf("can't scan URL with alias: %s: %w", alias, err)
+	}
+
+	const sqlUpdateCount = `
+		UPDATE url
+		SET count = count+1
+		WHERE alias = $1`
+	_, err = tx.ExecContext(ctx,
+		sqlUpdateCount,
+		alias,
+	)
+	if err != nil {
+		return "", fmt.Errorf("can't update count: %w", err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		return "", fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return url, nil
 }
 
 func (s *Storage) GetURL(ctx context.Context, alias string) (string, error) {
