@@ -1,10 +1,12 @@
 # App setting
-minimal_amount: 0.01
+app:
+    starting_balance: 100.00
+    minimal_amount: 0.01
 
 # HTTP server setting
 http:
     host: e-wallet
-    port: 8088
+    port: 8080
 
 # database settings
 db:

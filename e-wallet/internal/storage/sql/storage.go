@@ -31,14 +31,16 @@ type Storage struct {
 
 	conf *Conf
 
-	insertWallet *sql.Stmt
-	getBalance   *sql.Stmt
+	insertWallet      *sql.Stmt
+	insertTransaction *sql.Stmt
+	getBalance        *sql.Stmt
 
-	send     *sql.Stmt
-	withdraw *sql.Stmt
 	deposit  *sql.Stmt
+	withdraw *sql.Stmt
 
-	getHistory *sql.Stmt
+	sendOld     *sql.Stmt
+	withdrawOld *sql.Stmt
+	depositOld  *sql.Stmt
 }
 
 func New(ctx context.Context, conf *Conf) (*Storage, error) {
@@ -109,31 +111,48 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf(fmtStrErr, "getBalance", err)
 	}
-
-	const sqlGetHistory = `
-		SELECT time, from_wallet_id, to_wallet_id, amount
-		FROM transactions 
-		WHERE from_wallet_id = $1 OR to_wallet_id = $1
-		ORDER BY time`
-	s.getHistory, err = s.db.PrepareContext(ctx, sqlGetHistory)
+	const sqlInsertTransaction = `
+	INSERT INTO transactions (
+		time,
+		from_wallet_id,
+		to_wallet_id,
+		amount
+	) VALUES (NOW(), $1, $2, $3)`
+	s.insertTransaction, err = s.db.PrepareContext(ctx, sqlInsertTransaction)
 	if err != nil {
-		return fmt.Errorf(fmtStrErr, "getHistory", err)
+		return fmt.Errorf(fmtStrErr, "insertTransaction", err)
 	}
 
-	const sqlSend = "CALL transfer($1, $2, $3)"
-	s.send, err = s.db.PrepareContext(ctx, sqlSend)
+	const sqlSendOld = "CALL transfer($1, $2, $3)"
+	s.sendOld, err = s.db.PrepareContext(ctx, sqlSendOld)
 	if err != nil {
 		return fmt.Errorf(fmtStrErr, "withdraw", err)
 	}
 
-	const sqlWithdraw = "CALL withdraw($1, $2)"
+	const sqlWithdrawOld = "CALL withdraw($1, $2)"
+	s.withdrawOld, err = s.db.PrepareContext(ctx, sqlWithdrawOld)
+	if err != nil {
+		return fmt.Errorf(fmtStrErr, "withdraw old", err)
+	}
+	const sqlWithdraw = `
+		UPDATE wallets
+		SET balance = round(CAST(balance-$2 AS numeric), 2)
+		WHERE id = $1`
 	s.withdraw, err = s.db.PrepareContext(ctx, sqlWithdraw)
 	if err != nil {
 		return fmt.Errorf(fmtStrErr, "withdraw", err)
 	}
 
-	const sqlDeposit = "CALL deposit($1, $2)"
+	const sqlDeposit = `
+		UPDATE wallets
+		SET balance = round(CAST(balance+$2 AS numeric), 2)
+		WHERE id = $1`
 	s.deposit, err = s.db.PrepareContext(ctx, sqlDeposit)
+	if err != nil {
+		return fmt.Errorf(fmtStrErr, "deposit", err)
+	}
+	const sqlDepositOld = "CALL deposit($1, $2)"
+	s.depositOld, err = s.db.PrepareContext(ctx, sqlDepositOld)
 	if err != nil {
 		return fmt.Errorf(fmtStrErr, "deposit", err)
 	}
@@ -143,13 +162,15 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 
 func (s *Storage) Close() error {
 	s.insertWallet.Close()
+	s.insertTransaction.Close()
 	s.getBalance.Close()
 
-	s.send.Close()
 	s.withdraw.Close()
 	s.deposit.Close()
 
-	s.getHistory.Close()
+	s.sendOld.Close()
+	s.withdrawOld.Close()
+	s.depositOld.Close()
 
 	return s.db.Close() //nolint:wrapcheck
 }

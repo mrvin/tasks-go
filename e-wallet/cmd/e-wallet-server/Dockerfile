@@ -28,6 +28,6 @@ COPY --from=build ["/app/bin/e-wallet-server", "/usr/local/bin/e-wallet-server"]
 
 ENV TZ=Europe/Moscow
 
-EXPOSE 8088
+EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/e-wallet-server"]

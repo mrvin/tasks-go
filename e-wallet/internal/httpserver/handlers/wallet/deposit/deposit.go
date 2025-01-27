@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/mrvin/tasks-go/e-wallet/internal/app"
 	httpresponse "github.com/mrvin/tasks-go/e-wallet/pkg/http/response"
 )
 
@@ -21,7 +22,7 @@ type RequestDeposit struct {
 	Amount float64 `json:"amount"`
 }
 
-func New(depositor WalletDepositor, minimalAmount float64) http.HandlerFunc {
+func New(conf *app.Conf, depositor WalletDepositor) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		strWalletID := req.PathValue("walletID")
 		walletIDTo, err := uuid.Parse(strWalletID)
@@ -51,7 +52,7 @@ func New(depositor WalletDepositor, minimalAmount float64) http.HandlerFunc {
 			return
 		}
 
-		if request.Amount < minimalAmount {
+		if request.Amount < conf.MinimalAmount {
 			err := errors.New("amount is too small")
 			slog.Error(err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)

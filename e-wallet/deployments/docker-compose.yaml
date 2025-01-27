@@ -4,7 +4,7 @@ services:
          context: ../
          dockerfile: cmd/e-wallet-server/Dockerfile
         ports:
-         - "8088:8088" # REST API
+         - "8080:8080" # REST API
         depends_on:
          - migrate
         volumes:

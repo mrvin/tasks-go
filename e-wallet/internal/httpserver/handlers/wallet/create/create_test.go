@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/mrvin/tasks-go/e-wallet/internal/httpserver/handlers/wallet/create/mocks"
+	"github.com/mrvin/tasks-go/e-wallet/internal/app"
 )
 
 func TestCreate(t *testing.T) {
@@ -29,8 +29,9 @@ func TestCreate(t *testing.T) {
 	}
 
 	mux := http.NewServeMux()
-	mockWalletCreator := mocks.NewWalletCreator()
-	mux.HandleFunc(http.MethodPost+" /api/v1/wallet", New(mockWalletCreator))
+	conf := &app.Conf{StartingBalance: 100.0, MinimalAmount: 0.01}
+	mockWalletCreator := NewWalletCreator()
+	mux.HandleFunc(http.MethodPost+" /api/v1/wallet", New(conf, mockWalletCreator))
 	for _, test := range tests {
 		req, err := http.NewRequest(http.MethodPost, "/api/v1/wallet", nil)
 		if err != nil {

@@ -8,10 +8,9 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/mrvin/tasks-go/e-wallet/internal/app"
 	httpresponse "github.com/mrvin/tasks-go/e-wallet/pkg/http/response"
 )
-
-const StartingBalance = 100.00
 
 type WalletCreator interface {
 	Create(ctx context.Context, balance float64) (uuid.UUID, error)
@@ -23,9 +22,9 @@ type ResponseCreate struct {
 	Status  string    `json:"status"`
 }
 
-func New(creator WalletCreator) http.HandlerFunc {
+func New(conf *app.Conf, creator WalletCreator) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		id, err := creator.Create(req.Context(), StartingBalance)
+		id, err := creator.Create(req.Context(), conf.StartingBalance)
 		if err != nil {
 			err := fmt.Errorf("create wallet: %w", err)
 			slog.Error(err.Error())
@@ -36,7 +35,7 @@ func New(creator WalletCreator) http.HandlerFunc {
 		// Write json response
 		response := ResponseCreate{
 			ID:      id,
-			Balance: StartingBalance,
+			Balance: conf.StartingBalance,
 			Status:  "OK",
 		}
 

@@ -9,18 +9,18 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/mrvin/tasks-go/e-wallet/internal/app"
 	"github.com/mrvin/tasks-go/e-wallet/internal/config"
 	"github.com/mrvin/tasks-go/e-wallet/internal/httpserver"
 	"github.com/mrvin/tasks-go/e-wallet/internal/logger"
 	sqlstorage "github.com/mrvin/tasks-go/e-wallet/internal/storage/sql"
 )
 
-//nolint:tagliatelle
 type Config struct {
-	MinimalAmount float64         `yaml:"minimal_amount"`
-	DB            sqlstorage.Conf `yaml:"db"`
-	HTTP          httpserver.Conf `yaml:"http"`
-	Logger        logger.Conf     `yaml:"logger"`
+	App    app.Conf        `yaml:"app"`
+	DB     sqlstorage.Conf `yaml:"db"`
+	HTTP   httpserver.Conf `yaml:"http"`
+	Logger logger.Conf     `yaml:"logger"`
 }
 
 func main() {
@@ -61,7 +61,7 @@ func main() {
 		}
 	}()
 
-	serverHTTP := httpserver.New(&conf.HTTP, conf.MinimalAmount, storage)
+	serverHTTP := httpserver.New(&conf.App, &conf.HTTP, storage)
 
 	ctx, cancel := signal.NotifyContext(
 		ctx,

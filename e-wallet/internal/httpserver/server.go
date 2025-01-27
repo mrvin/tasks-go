@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mrvin/tasks-go/e-wallet/internal/app"
 	balancewallet "github.com/mrvin/tasks-go/e-wallet/internal/httpserver/handlers/wallet/balance"
 	createwallet "github.com/mrvin/tasks-go/e-wallet/internal/httpserver/handlers/wallet/create"
 	depositwallet "github.com/mrvin/tasks-go/e-wallet/internal/httpserver/handlers/wallet/deposit"
@@ -31,14 +32,14 @@ type Server struct {
 	http.Server
 }
 
-func New(conf *Conf, minimalAmount float64, st storage.WalletStorage) *Server {
+func New(appConf *app.Conf, conf *Conf, st storage.WalletStorage) *Server {
 	mux := http.NewServeMux()
 	path := " /api/v1/wallet/"
 
-	mux.HandleFunc(http.MethodPost+path[:len(path)-1], createwallet.New(st))
-	mux.HandleFunc(http.MethodPost+path+"{walletID}/send", sendwallet.New(st, minimalAmount))
-	mux.HandleFunc(http.MethodPost+path+"{walletID}/deposit", depositwallet.New(st, minimalAmount))
-	mux.HandleFunc(http.MethodPost+path+"{walletID}/withdraw", withdrawwallet.New(st, minimalAmount))
+	mux.HandleFunc(http.MethodPost+path[:len(path)-1], createwallet.New(appConf, st))
+	mux.HandleFunc(http.MethodPost+path+"{walletID}/send", sendwallet.New(appConf, st))
+	mux.HandleFunc(http.MethodPost+path+"{walletID}/deposit", depositwallet.New(appConf, st))
+	mux.HandleFunc(http.MethodPost+path+"{walletID}/withdraw", withdrawwallet.New(appConf, st))
 
 	mux.HandleFunc(http.MethodGet+path+"{walletID}/history", historywallet.New(st))
 	mux.HandleFunc(http.MethodGet+path+"{walletID}", balancewallet.New(st))

@@ -1,10 +1,15 @@
 # App setting
 minimal_amount: 0.01
 
+# App setting
+app:
+    starting_balance: 100.00
+    minimal_amount: 0.01
+
 # HTTP server setting
 http:
     host: localhost
-    port: 8088
+    port: 8080
 
 # database settings
 db:
@@ -17,6 +22,6 @@ db:
 
 # logging settings
 logger:
-    filepath: ../logs/e-wallet-log.json
+    filepath: ../log/e-wallet-log.json
     level: debug # debug, info, warn, error
 

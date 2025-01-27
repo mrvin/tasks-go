@@ -1,4 +1,4 @@
-package mocks
+package create
 
 import (
 	"context"
@@ -7,15 +7,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type WalletCreator struct {
+type WalletCreatorMock struct {
 	mock.Mock
 }
 
-func NewWalletCreator() *WalletCreator {
-	return new(WalletCreator)
+func NewWalletCreator() *WalletCreatorMock {
+	return new(WalletCreatorMock)
 }
 
-func (m *WalletCreator) Create(ctx context.Context, balance float64) (uuid.UUID, error) {
+func (m *WalletCreatorMock) Create(ctx context.Context, balance float64) (uuid.UUID, error) {
 	args := m.Called(ctx, balance)
 
 	if len(args) == 0 {

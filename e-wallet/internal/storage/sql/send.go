@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
-	"time"
 
 	"github.com/mrvin/tasks-go/e-wallet/internal/storage"
 )
@@ -16,28 +15,22 @@ var ErrNoWalletIDFrom = errors.New("no wallet-from with id")
 var ErrNoWalletIDTo = errors.New("no wallet-to with id")
 var ErrNotEnoughFunds = errors.New("not enough funds in wallet")
 
-func (s *Storage) SendOld(ctx context.Context, transaction storage.Transaction) error {
-	tx, err := s.db.BeginTx(ctx, nil)
+func (s *Storage) Send(ctx context.Context, transaction storage.Transaction) error {
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable, ReadOnly: false})
 	if err != nil {
 		return fmt.Errorf("start transaction: %w", err)
 	}
 	defer func() {
 		if err := tx.Rollback(); err != nil {
-			slog.Error("Failed Rollback" + err.Error())
+			if !errors.Is(err, sql.ErrTxDone) {
+				slog.Error("Failed Rollback" + err.Error())
+			}
 		}
 	}()
 
 	// Проверяем достаточно ли средств на исходящем кошельке
 	var balanceFrom float64
-	sqlGetBalance := `
-		SELECT balance
-		FROM wallets
-		WHERE id = $1`
-	if err = tx.QueryRowContext(
-		ctx,
-		sqlGetBalance,
-		transaction.WalletIDFrom,
-	).Scan(&balanceFrom); err != nil {
+	if err := tx.StmtContext(ctx, s.getBalance).QueryRow(transaction.WalletIDFrom).Scan(&balanceFrom); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("get balance: %w %v", ErrNoWalletIDFrom, transaction.WalletIDFrom)
 		}
@@ -48,11 +41,7 @@ func (s *Storage) SendOld(ctx context.Context, transaction storage.Transaction) 
 	}
 	// Проверяем cуществует ли целевой кошелёк
 	var balanceTo float64
-	if err = tx.QueryRowContext(
-		ctx,
-		sqlGetBalance,
-		transaction.WalletIDTo,
-	).Scan(&balanceTo); err != nil {
+	if err = tx.StmtContext(ctx, s.getBalance).QueryRow(transaction.WalletIDTo).Scan(&balanceTo); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("get balance: %w %v", ErrNoWalletIDTo, transaction.WalletIDTo)
 		}
@@ -60,48 +49,14 @@ func (s *Storage) SendOld(ctx context.Context, transaction storage.Transaction) 
 	}
 
 	// Обновляем исходящий и целевой кошельки
-	sqlUpdateBalance := `
-		UPDATE wallets
-		SET balance = round(CAST($2 AS numeric), 2)
-		WHERE id = $1`
-	_, err = tx.ExecContext(
-		ctx,
-		sqlUpdateBalance,
-		transaction.WalletIDFrom,
-		balanceFrom-transaction.Amount,
-	)
-	if err != nil {
+	if _, err := tx.StmtContext(ctx, s.withdraw).Exec(transaction.WalletIDFrom, transaction.Amount); err != nil {
 		return fmt.Errorf("update balance: %w", err)
 	}
-	_, err = tx.ExecContext(
-		ctx,
-		sqlUpdateBalance,
-		transaction.WalletIDTo,
-		balanceTo+transaction.Amount,
-	)
-	if err != nil {
-		return fmt.Errorf("update balance: %w", err)
+	if _, err := tx.StmtContext(ctx, s.deposit).Exec(transaction.WalletIDTo, transaction.Amount); err != nil {
+		return err
 	}
-	transaction.Time = time.Now()
-
-	// Записываем транзакцию
-	sqlInsertTransaction := `
-		INSERT INTO transactions (
-			time,
-			from_wallet_id,
-			to_wallet_id,
-			amount
-		)
-		VALUES ($1, $2, $3, $4)`
-	if _, err := tx.ExecContext(
-		ctx,
-		sqlInsertTransaction,
-		transaction.Time,
-		transaction.WalletIDFrom,
-		transaction.WalletIDTo,
-		transaction.Amount,
-	); err != nil {
-		return fmt.Errorf("write transaction: %w", err)
+	if _, err := tx.StmtContext(ctx, s.insertTransaction).Exec(transaction.WalletIDFrom, transaction.WalletIDTo, transaction.Amount); err != nil {
+		return err
 	}
 
 	if err = tx.Commit(); err != nil {
@@ -111,8 +66,8 @@ func (s *Storage) SendOld(ctx context.Context, transaction storage.Transaction) 
 	return nil
 }
 
-func (s *Storage) Send(ctx context.Context, transaction storage.Transaction) error {
-	if _, err := s.send.ExecContext(
+func (s *Storage) SendOld(ctx context.Context, transaction storage.Transaction) error {
+	if _, err := s.sendOld.ExecContext(
 		ctx,
 		transaction.WalletIDFrom,
 		transaction.WalletIDTo,

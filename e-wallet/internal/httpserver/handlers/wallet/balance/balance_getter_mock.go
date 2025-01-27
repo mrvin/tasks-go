@@ -1,4 +1,4 @@
-package mocks
+package balance
 
 import (
 	"context"
@@ -7,15 +7,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type WalletBalance struct {
+type WalletBalanceMock struct {
 	mock.Mock
 }
 
-func NewWalletBalance() *WalletBalance {
-	return new(WalletBalance)
+func NewWalletBalance() *WalletBalanceMock {
+	return new(WalletBalanceMock)
 }
 
-func (m *WalletBalance) Balance(ctx context.Context, walletID uuid.UUID) (float64, error) {
+func (m *WalletBalanceMock) Balance(ctx context.Context, walletID uuid.UUID) (float64, error) {
 	args := m.Called(ctx, walletID)
 
 	if len(args) == 0 {

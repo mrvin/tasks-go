@@ -15,7 +15,7 @@ type WalletStorage interface {
 	Deposit(ctx context.Context, walletID uuid.UUID, amount float64) error
 	Withdraw(ctx context.Context, walletID uuid.UUID, amount float64) error
 
-	HistoryTransactions(ctx context.Context, walletID uuid.UUID) ([]Transaction, error)
+	HistoryTransactions(ctx context.Context, walletID uuid.UUID, limit, offset uint64) ([]Transaction, error)
 }
 
 type Transaction struct {

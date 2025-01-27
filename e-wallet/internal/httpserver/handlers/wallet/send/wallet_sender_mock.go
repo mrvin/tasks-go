@@ -1,4 +1,4 @@
-package mocks
+package send
 
 import (
 	"context"
@@ -7,15 +7,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type WalletSender struct {
+type WalletSenderMock struct {
 	mock.Mock
 }
 
-func NewWalletSender() *WalletSender {
-	return new(WalletSender)
+func NewWalletSender() *WalletSenderMock {
+	return new(WalletSenderMock)
 }
 
-func (m *WalletSender) Send(ctx context.Context, transaction storage.Transaction) error {
+func (m *WalletSenderMock) Send(ctx context.Context, transaction storage.Transaction) error {
 	args := m.Called(ctx, transaction)
 
 	if len(args) == 0 {

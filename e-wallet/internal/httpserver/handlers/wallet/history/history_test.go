@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mrvin/tasks-go/e-wallet/internal/httpserver/handlers/wallet/history/mocks"
 	"github.com/mrvin/tasks-go/e-wallet/internal/storage"
 	sqlstorage "github.com/mrvin/tasks-go/e-wallet/internal/storage/sql"
 )
@@ -16,6 +15,8 @@ func TestHistory(t *testing.T) {
 	tests := []struct {
 		name             string
 		walletID         string
+		limit            uint64
+		offset           uint64
 		mockTransactions []storage.Transaction
 		mockError        error
 		httpStatus       int
@@ -24,6 +25,8 @@ func TestHistory(t *testing.T) {
 		{
 			name:     "Success",
 			walletID: "989e230a-7738-4449-8ad1-684c1f201142",
+			limit:    100,
+			offset:   0,
 			mockTransactions: []storage.Transaction{
 				{
 					Time:         time.Date(2022, time.February, 27, 10, 0, 0, 0, time.UTC),
@@ -39,6 +42,8 @@ func TestHistory(t *testing.T) {
 		{
 			name:             "No WalletID",
 			walletID:         "ecdd11f2-a871-4d52-be41-ff7a3fbb7f5b",
+			limit:            100,
+			offset:           0,
 			mockTransactions: nil,
 			mockError:        sqlstorage.ErrNoWalletID,
 			httpStatus:       http.StatusNotFound,
@@ -47,14 +52,14 @@ func TestHistory(t *testing.T) {
 	}
 
 	mux := http.NewServeMux()
-	mockWalletHistory := mocks.NewWalletHistory()
+	mockWalletHistory := NewWalletHistory()
 	mux.HandleFunc(http.MethodGet+" /api/v1/wallet/{walletID}/history", New(mockWalletHistory))
 	for _, test := range tests {
 		req, err := http.NewRequest(http.MethodGet, "/api/v1/wallet/"+test.walletID+"/history", nil)
 		if err != nil {
 			t.Fatalf("create request: %v", err)
 		}
-		mockWalletHistory.On("HistoryTransactions", req.Context(), uuid.Must(uuid.Parse(test.walletID))).
+		mockWalletHistory.On("HistoryTransactions", req.Context(), uuid.Must(uuid.Parse(test.walletID)), test.limit, test.offset).
 			Return(test.mockTransactions, test.mockError)
 
 		res := httptest.NewRecorder()

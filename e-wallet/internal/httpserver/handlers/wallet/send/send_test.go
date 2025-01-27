@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/mrvin/tasks-go/e-wallet/internal/httpserver/handlers/wallet/send/mocks"
+	"github.com/mrvin/tasks-go/e-wallet/internal/app"
 	"github.com/mrvin/tasks-go/e-wallet/internal/storage"
 	sqlstorage "github.com/mrvin/tasks-go/e-wallet/internal/storage/sql"
 )
@@ -53,8 +53,9 @@ func TestSend(t *testing.T) {
 	}
 
 	mux := http.NewServeMux()
-	mockWalletSender := mocks.NewWalletSender()
-	mux.HandleFunc(http.MethodPost+" /api/v1/wallet/{walletID}/send", New(mockWalletSender))
+	conf := &app.Conf{StartingBalance: 100.0, MinimalAmount: 0.01}
+	mockWalletSender := NewWalletSender()
+	mux.HandleFunc(http.MethodPost+" /api/v1/wallet/{walletID}/send", New(conf, mockWalletSender))
 	for _, test := range tests {
 
 		dataRequestSend, err := json.Marshal(RequestSend{To: uuid.Must(uuid.Parse(test.walletIDTo)), Amount: test.amount})

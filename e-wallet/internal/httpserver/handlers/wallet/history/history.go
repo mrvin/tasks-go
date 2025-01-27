@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/mrvin/tasks-go/e-wallet/internal/storage"
@@ -14,8 +15,11 @@ import (
 	httpresponse "github.com/mrvin/tasks-go/e-wallet/pkg/http/response"
 )
 
+const defaultLimit = 100
+const defaultOffset = 0
+
 type WalletHistory interface {
-	HistoryTransactions(ctx context.Context, walletID uuid.UUID) ([]storage.Transaction, error)
+	HistoryTransactions(ctx context.Context, walletID uuid.UUID, limit, offset uint64) ([]storage.Transaction, error)
 }
 
 type ResponseHistory struct {
@@ -33,8 +37,30 @@ func New(historyGetter WalletHistory) http.HandlerFunc {
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
+		limit := uint64(defaultLimit)
+		limitStr := req.URL.Query().Get("limit")
+		if limitStr != "" {
+			limit, err = strconv.ParseUint(limitStr, 10, 64)
+			if err != nil {
+				err := fmt.Errorf("incorrect limit value: %w", err)
+				slog.Error(err.Error())
+				httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		offset := uint64(defaultOffset)
+		offsetStr := req.URL.Query().Get("offset")
+		if offsetStr != "" {
+			offset, err = strconv.ParseUint(offsetStr, 10, 64)
+			if err != nil {
+				err := fmt.Errorf("incorrect offset value: %w", err)
+				slog.Error(err.Error())
+				httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
 
-		historyTransactions, err := historyGetter.HistoryTransactions(req.Context(), walletID)
+		historyTransactions, err := historyGetter.HistoryTransactions(req.Context(), walletID, limit, offset)
 		if err != nil {
 			err := fmt.Errorf("get history transactions: %w", err)
 			slog.Error(err.Error())

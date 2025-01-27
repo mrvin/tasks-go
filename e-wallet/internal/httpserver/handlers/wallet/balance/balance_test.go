@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/mrvin/tasks-go/e-wallet/internal/httpserver/handlers/wallet/balance/mocks"
 	sqlstorage "github.com/mrvin/tasks-go/e-wallet/internal/storage/sql"
 )
 
@@ -38,7 +37,7 @@ func TestBalance(t *testing.T) {
 	}
 
 	mux := http.NewServeMux()
-	mockBalanceGetter := mocks.NewWalletBalance()
+	mockBalanceGetter := NewWalletBalance()
 	mux.HandleFunc(http.MethodGet+" /api/v1/wallet/"+"{walletID}", New(mockBalanceGetter))
 	for _, test := range tests {
 		req, err := http.NewRequest(http.MethodGet, "/api/v1/wallet/"+test.walletID, nil)

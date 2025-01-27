@@ -1,4 +1,4 @@
-package mocks
+package history
 
 import (
 	"context"
@@ -8,16 +8,16 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type WalletHistory struct {
+type WalletHistoryMock struct {
 	mock.Mock
 }
 
-func NewWalletHistory() *WalletHistory {
-	return new(WalletHistory)
+func NewWalletHistory() *WalletHistoryMock {
+	return new(WalletHistoryMock)
 }
 
-func (m *WalletHistory) HistoryTransactions(ctx context.Context, walletID uuid.UUID) ([]storage.Transaction, error) {
-	args := m.Called(ctx, walletID)
+func (m *WalletHistoryMock) HistoryTransactions(ctx context.Context, walletID uuid.UUID, limit, offset uint64) ([]storage.Transaction, error) {
+	args := m.Called(ctx, walletID, limit, offset)
 
 	if len(args) == 0 {
 		panic("no return value specified for HistoryTransactions")
