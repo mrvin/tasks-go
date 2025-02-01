@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mrvin/tasks-go/e-wallet/internal/app"
+	sqlstorage "github.com/mrvin/tasks-go/e-wallet/internal/storage/sql"
 	httpresponse "github.com/mrvin/tasks-go/e-wallet/pkg/http/response"
 )
 
@@ -59,6 +60,16 @@ func New(conf *app.Conf, withdrawer WalletWithdrawer) http.HandlerFunc {
 		}
 
 		if err := withdrawer.Withdraw(req.Context(), walletIDFrom, request.Amount); err != nil {
+			err := fmt.Errorf("withdraw: %w", err)
+			slog.Error(err.Error())
+			if errors.Is(err, sqlstorage.ErrNoWalletID) {
+				httpresponse.WriteError(res, err.Error(), http.StatusNotFound)
+				return
+			}
+			if errors.Is(err, sqlstorage.ErrNotEnoughFunds) {
+				httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
+				return
+			}
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}

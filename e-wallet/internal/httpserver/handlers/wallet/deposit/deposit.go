@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mrvin/tasks-go/e-wallet/internal/app"
+	sqlstorage "github.com/mrvin/tasks-go/e-wallet/internal/storage/sql"
 	httpresponse "github.com/mrvin/tasks-go/e-wallet/pkg/http/response"
 )
 
@@ -60,6 +61,12 @@ func New(conf *app.Conf, depositor WalletDepositor) http.HandlerFunc {
 		}
 
 		if err := depositor.Deposit(req.Context(), walletIDTo, request.Amount); err != nil {
+			err := fmt.Errorf("deposit: %w", err)
+			slog.Error(err.Error())
+			if errors.Is(err, sqlstorage.ErrNoWalletID) {
+				httpresponse.WriteError(res, err.Error(), http.StatusNotFound)
+				return
+			}
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}

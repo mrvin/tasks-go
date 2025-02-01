@@ -21,7 +21,7 @@ func Retry(connector Connector, retries int) Connector {
 			}
 
 			// Exponential increase in latency.
-			shouldRetryAt := time.Second * 2 << r
+			shouldRetryAt := time.Second * 2 << r //nolint: mnd
 			slog.Warn(fmt.Sprintf("Attempt %d failed; retrying in %v", r+1, shouldRetryAt))
 
 			select {

@@ -10,13 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Storage) WithdrawOld(ctx context.Context, walletID uuid.UUID, amount float64) error {
-	if _, err := s.withdrawOld.ExecContext(ctx, walletID, amount); err != nil {
-		return fmt.Errorf("withdraw: %w", err)
-	}
-	return nil
-}
-
 func (s *Storage) Withdraw(ctx context.Context, walletID uuid.UUID, amount float64) error {
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable, ReadOnly: false})
 	if err != nil {
@@ -30,21 +23,32 @@ func (s *Storage) Withdraw(ctx context.Context, walletID uuid.UUID, amount float
 		}
 	}()
 
+	// Проверяем достаточно ли средств на кошельке.
 	var balanceFrom float64
-	if err := tx.StmtContext(ctx, s.getBalance).QueryRowContext(ctx, walletID).Scan(&balanceFrom); err != nil {
+	stmtGetBalance := tx.StmtContext(ctx, s.getBalance)
+	defer stmtGetBalance.Close()
+	if err := stmtGetBalance.QueryRowContext(ctx, walletID).Scan(&balanceFrom); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("get balance: %w %v", ErrNoWalletIDFrom, walletID)
+			return fmt.Errorf("get balance: %w %v", ErrNoWalletID, walletID)
 		}
 		return fmt.Errorf("get balance: %w", err)
 	}
 	if balanceFrom-amount < 0 {
 		return ErrNotEnoughFunds
 	}
-	if _, err := tx.StmtContext(ctx, s.withdraw).Exec(walletID, amount); err != nil {
-		return err
+
+	// Обновляем кошелек.
+	stmtWithdraw := tx.StmtContext(ctx, s.withdraw)
+	defer stmtWithdraw.Close()
+	if _, err := stmtWithdraw.ExecContext(ctx, walletID, amount); err != nil {
+		return fmt.Errorf("update balance: %w", err)
 	}
-	if _, err := tx.StmtContext(ctx, s.insertTransaction).Exec(walletID, nil, amount); err != nil {
-		return err
+
+	// Запись информации о транзакции.
+	stmtInsertTransaction := tx.StmtContext(ctx, s.insertTransaction)
+	defer stmtInsertTransaction.Close()
+	if _, err := stmtInsertTransaction.ExecContext(ctx, walletID, nil, amount); err != nil {
+		return fmt.Errorf("recording transaction information: %w", err)
 	}
 
 	if err = tx.Commit(); err != nil {

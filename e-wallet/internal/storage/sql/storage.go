@@ -3,6 +3,7 @@ package sqlstorage
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -16,6 +17,11 @@ const retriesConnect = 5
 const maxOpenConns = 25
 const maxIdleConns = 25
 const connMaxLifetime = 5 * time.Minute
+
+var ErrNoWalletIDFrom = errors.New("no wallet-from with id")
+var ErrNoWalletIDTo = errors.New("no wallet-to with id")
+var ErrNoWalletID = errors.New("no wallet with id")
+var ErrNotEnoughFunds = errors.New("not enough funds in wallet")
 
 type Conf struct {
 	Driver   string `yaml:"driver"`
@@ -37,10 +43,6 @@ type Storage struct {
 
 	deposit  *sql.Stmt
 	withdraw *sql.Stmt
-
-	sendOld     *sql.Stmt
-	withdrawOld *sql.Stmt
-	depositOld  *sql.Stmt
 }
 
 func New(ctx context.Context, conf *Conf) (*Storage, error) {
@@ -123,17 +125,6 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 		return fmt.Errorf(fmtStrErr, "insertTransaction", err)
 	}
 
-	const sqlSendOld = "CALL transfer($1, $2, $3)"
-	s.sendOld, err = s.db.PrepareContext(ctx, sqlSendOld)
-	if err != nil {
-		return fmt.Errorf(fmtStrErr, "withdraw", err)
-	}
-
-	const sqlWithdrawOld = "CALL withdraw($1, $2)"
-	s.withdrawOld, err = s.db.PrepareContext(ctx, sqlWithdrawOld)
-	if err != nil {
-		return fmt.Errorf(fmtStrErr, "withdraw old", err)
-	}
 	const sqlWithdraw = `
 		UPDATE wallets
 		SET balance = round(CAST(balance-$2 AS numeric), 2)
@@ -151,11 +142,6 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf(fmtStrErr, "deposit", err)
 	}
-	const sqlDepositOld = "CALL deposit($1, $2)"
-	s.depositOld, err = s.db.PrepareContext(ctx, sqlDepositOld)
-	if err != nil {
-		return fmt.Errorf(fmtStrErr, "deposit", err)
-	}
 
 	return nil
 }
@@ -167,10 +153,6 @@ func (s *Storage) Close() error {
 
 	s.withdraw.Close()
 	s.deposit.Close()
-
-	s.sendOld.Close()
-	s.withdrawOld.Close()
-	s.depositOld.Close()
 
 	return s.db.Close() //nolint:wrapcheck
 }

@@ -10,13 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Storage) DepositOld(ctx context.Context, walletID uuid.UUID, amount float64) error {
-	if _, err := s.depositOld.ExecContext(ctx, walletID, amount); err != nil {
-		return fmt.Errorf("deposit: %w", err)
-	}
-	return nil
-}
-
 func (s *Storage) Deposit(ctx context.Context, walletID uuid.UUID, amount float64) error {
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable, ReadOnly: false})
 	if err != nil {
@@ -29,12 +22,29 @@ func (s *Storage) Deposit(ctx context.Context, walletID uuid.UUID, amount float6
 			}
 		}
 	}()
-
-	if _, err := tx.StmtContext(ctx, s.deposit).Exec(walletID, amount); err != nil {
-		return err
+	// Проверяем существует ли кошелек
+	var balanceTo float64
+	stmtGetBalance := tx.StmtContext(ctx, s.getBalance)
+	defer stmtGetBalance.Close()
+	if err := stmtGetBalance.QueryRowContext(ctx, walletID).Scan(&balanceTo); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("get balance: %w %v", ErrNoWalletID, walletID)
+		}
+		return fmt.Errorf("get balance: %w", err)
 	}
-	if _, err := tx.StmtContext(ctx, s.insertTransaction).Exec(nil, walletID, amount); err != nil {
-		return err
+
+	// Обновляем кошелек.
+	stmtDeposit := tx.StmtContext(ctx, s.deposit)
+	defer stmtDeposit.Close()
+	if _, err := stmtDeposit.ExecContext(ctx, walletID, amount); err != nil {
+		return fmt.Errorf("update balance: %w", err)
+	}
+
+	// Запись информации о транзакции.
+	stmtInsertTransaction := tx.StmtContext(ctx, s.insertTransaction)
+	defer stmtInsertTransaction.Close()
+	if _, err := stmtInsertTransaction.ExecContext(ctx, nil, walletID, amount); err != nil {
+		return fmt.Errorf("recording transaction information: %w", err)
 	}
 
 	if err = tx.Commit(); err != nil {
