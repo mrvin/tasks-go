@@ -1,3 +1,5 @@
+Реализованы 3 из 4 сервисы. Не реализован Frontend-сервис.
+
 ## Мониторинг состояния контейнеров
 Для постоянного мониторинга своих контейнеров необходимо приложение, которое будет
 постоянно отслеживать их состояние.
@@ -10,7 +12,7 @@
 
 #### Сервисы
 В результате выполнения задания должны появиться 4 сервиса:
-1. Backend-сервис обеспечивает RESTful API для запроса данных из DB и добавления туда
+1. Backend-сервис обеспечивает RESTful API для запроса данных из базы данных и добавления туда
 	новых данных.
 2. Frontend-сервис должен быть написан на JS с использованием любой библиотеки
 	пользовательских интерфейсов (предпочтительно React). Берет данные через API
@@ -29,5 +31,56 @@
 чего можно зайти через http на определенный порт и увидеть данные о статусе машин,
 когда произойдет первый цикл опроса контейнеров.
 
+#### Сборка и запуск приложения в Docker Compose
+```shell script
+$ make run
+...............
+```
+
+#### Пример использования API Backend
+```shell script
+$ curl -i -X GET 'http://localhost:8080/health'
+{
+	"status":"OK"
+}
+$ curl -i -X POST 'http://localhost:8080/hosts' \
+-H "Content-Type: application/json" \
+-d '{
+	"name": "Container 1",
+	"ip": "172.19.0.2"
+}'
+{
+	"status":"OK"
+}
+$ curl -i -X GET 'http://localhost:8080/hosts'
+{
+	"list_host_ip":[
+		{
+			"name":"Container 1",
+			"ip":"172.19.0.2"
+		}
+	],
+	"status":"OK"
+}
+$ curl -i -X POST 'http://localhost:8080/pings' \
+-H "Content-Type: application/json" \
+-d '{
+	"ip": "172.19.0.2",
+	"time": 1000000,
+	"created_at": "2022-05-25T10:41:31Z"
+}'
+$ curl -i -X GET 'http://localhost:8080/pings'
+{
+	"list_latest_ping":[
+		{
+			"ip":"172.19.0.2",
+			"time":1000000,
+			"created_at":"2022-05-25T10:41:31Z"
+		}
+	],
+	"status":"OK"
+}
+```
+
 #### Общая схема севисов
-![scheme](./img/general-scheme-of-services.png.png)
+![scheme](./img/general-scheme-of-services.png)

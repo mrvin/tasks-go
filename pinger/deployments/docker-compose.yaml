@@ -1,0 +1,44 @@
+services:
+    pinger:
+        build:
+         context: ../
+         dockerfile: cmd/pinger/Dockerfile
+        env_file:
+         - ../configs/pinger.env
+        depends_on:
+         - backend
+
+    backend:
+        build:
+         context: ../
+         dockerfile: cmd/backend/Dockerfile
+        ports:
+         - "8080:8080"
+        env_file:
+         - ../configs/backend.env
+         - ../configs/postgres.env
+        depends_on:
+         - migrate
+
+    migrate:
+        image: migrate/migrate:v4.17.1
+        command: ["-path", "/migrations", "-database",  "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable", "up"]
+        depends_on:
+          postgres:
+            condition: service_healthy
+        volumes:
+         - ./../migrations:/migrations
+
+    # Create service with PostgreSQL.
+    postgres:
+        image: postgres:17.0-alpine3.20
+        ports:
+         - "5432"
+        user: root
+        env_file:
+         - ../configs/backend.env
+        healthcheck:
+          test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+          interval: 3s
+        volumes:
+         - ${HOME}/volumes_docker/pinger/postgres-data:/var/lib/postgresql/data
