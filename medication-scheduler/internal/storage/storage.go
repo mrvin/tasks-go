@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,19 +27,37 @@ type Schedule struct {
 	Times        []string  `json:"times"`
 	TimesInt64   []int64   `json:"-"`
 	AllLife      bool      `json:"all_life"`
-	BeginDate    time.Time `json:"begin_date,omitempty"`
-	EndDate      time.Time `json:"end_date,omitempty"`
+	BeginDate    Date      `json:"begin_date,omitempty"`
+	EndDate      Date      `json:"end_date,omitempty"`
 	UserID       uuid.UUID `json:"user_id"`
 	Status       string    `json:"status"`
-}
-
-type AllTaking struct {
-	NameMedicine string
-	Times        []int64
 }
 
 //nolint:tagliatelle
 type Taking struct {
 	NameMedicine string `json:"name_medicine"`
 	Time         string `json:"time"`
+}
+
+type AllTaking struct {
+	NameMedicine string
+	Times        []int64
+}
+type Date struct {
+	time.Time
+}
+
+func (t *Date) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	date, err := time.Parse(time.DateOnly, s)
+	if err != nil {
+		return err //nolint:wrapcheck
+	}
+	t.Time = date
+
+	return nil
+}
+
+func (t *Date) MarshalJSON() ([]byte, error) {
+	return []byte("\"" + t.Time.Format(time.DateOnly) + "\""), nil
 }

@@ -50,8 +50,8 @@ $ curl -i -X POST 'http://localhost:8080/schedule' \
 	"name_medicine":"Medicine 1",
 	"num_per_day":21,
 	"all_life":false,
-	"begin_date":"2025-03-10T00:00:00Z",
-	"end_date":"2025-03-20T00:00:00Z",
+	"begin_date":"2025-03-10",
+	"end_date":"2025-03-20",
 	"user_id":"2b468473-e360-47e1-8967-d53af04c93d1"
 }'
 
@@ -106,7 +106,7 @@ $ curl -i -X GET 'http://localhost:8080/schedule?user_id=2b468473-e360-47e1-8967
   "times": [
     "08:00",
     "08:45",
-	 .....
+     .....
     "21:30",
     "22:00"
   ],

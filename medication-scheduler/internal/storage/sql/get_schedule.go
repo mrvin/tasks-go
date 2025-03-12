@@ -19,8 +19,8 @@ func (s *Storage) GetSchedule(ctx context.Context, userID uuid.UUID, scheduleID 
 		&schedule.NumPerDay,
 		pq.Array(&schedule.TimesInt64),
 		&schedule.AllLife,
-		&schedule.BeginDate,
-		&schedule.EndDate,
+		&schedule.BeginDate.Time,
+		&schedule.EndDate.Time,
 		&schedule.UserID,
 	); err != nil {
 		if err == sql.ErrNoRows {

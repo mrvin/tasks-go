@@ -55,7 +55,7 @@ func NewCreateSchedule(saver ScheduleSaver) http.HandlerFunc {
 			return
 		}
 		if !request.AllLife {
-			if request.BeginDate.After(request.EndDate) {
+			if request.BeginDate.After(request.EndDate.Time) {
 				err := errors.New("begin date must be before end date")
 				slog.ErrorContext(ctx, op+err.Error())
 				httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)

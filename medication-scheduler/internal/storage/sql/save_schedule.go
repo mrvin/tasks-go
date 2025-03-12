@@ -14,8 +14,8 @@ func (s *Storage) SaveSchedule(ctx context.Context, schedule *storage.Schedule) 
 		schedule.NumPerDay,
 		pq.Array(schedule.TimesInt64),
 		schedule.AllLife,
-		schedule.BeginDate,
-		schedule.EndDate,
+		schedule.BeginDate.Time,
+		schedule.EndDate.Time,
 		schedule.UserID,
 	).Scan(&schedule.ID); err != nil {
 		return 0, fmt.Errorf("saving schedule to db: %w", err)

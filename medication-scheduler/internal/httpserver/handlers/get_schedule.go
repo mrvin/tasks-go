@@ -31,7 +31,7 @@ func NewGetSchedule(getter ScheduleGetter) http.HandlerFunc {
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
-		ctx := logger.WithUserID(ctx, userID.String())
+		ctx = logger.WithUserID(ctx, userID.String())
 		scheduleIDStr := req.URL.Query().Get("schedule_id")
 		scheduleID, err := strconv.ParseInt(scheduleIDStr, 10, 64)
 		if err != nil {
