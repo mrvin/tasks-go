@@ -11,7 +11,7 @@ import (
 var ErrScheduleNotFound = errors.New("schedule not found")
 
 type SchedulerStorage interface {
-	CreateSchedule(ctx context.Context, schedule *Schedule) (int64, error)
+	SaveSchedule(ctx context.Context, schedule *Schedule) (int64, error)
 	GetSchedule(ctx context.Context, userID uuid.UUID, scheduleID int64) (*Schedule, error)
 
 	ListSchedulesIDs(ctx context.Context, userID uuid.UUID) ([]int64, error)

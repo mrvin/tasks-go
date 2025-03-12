@@ -8,7 +8,7 @@ import (
 	"github.com/mrvin/tasks-go/medication-scheduler/internal/storage"
 )
 
-func (s *Storage) CreateSchedule(ctx context.Context, schedule *storage.Schedule) (int64, error) {
+func (s *Storage) SaveSchedule(ctx context.Context, schedule *storage.Schedule) (int64, error) {
 	if err := s.insertSchedule.QueryRowContext(ctx,
 		schedule.NameMedicine,
 		schedule.NumPerDay,

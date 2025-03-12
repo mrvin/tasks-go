@@ -2,7 +2,6 @@ package logger
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -13,7 +12,8 @@ type contextKey int
 
 const (
 	contextKeyRequestID contextKey = iota
-	contextKeyUserName
+	contextKeyUserID
+	contextKeyScheduleID
 )
 
 const logFileMode = 0755
@@ -69,28 +69,23 @@ func WithRequestID(ctx context.Context, requestID string) context.Context {
 	return context.WithValue(ctx, contextKeyRequestID, requestID)
 }
 
-func WithUserName(ctx context.Context, userName string) context.Context {
-	return context.WithValue(ctx, contextKeyUserName, userName)
+func WithUserID(ctx context.Context, userID string) context.Context {
+	return context.WithValue(ctx, contextKeyUserID, userID)
 }
 
-func GetUserNameFromCtx(ctx context.Context) (string, error) {
-	if ctx == nil {
-		return "", errors.New("ctx is nil")
-	}
-	userName, ok := ctx.Value(contextKeyUserName).(string)
-	if !ok {
-		return "", errors.New("no user name in ctx")
-	}
-
-	return userName, nil
+func WithScheduleID(ctx context.Context, scheduleID int64) context.Context {
+	return context.WithValue(ctx, contextKeyScheduleID, scheduleID)
 }
 
 func (h ContextHandler) Handle(ctx context.Context, r slog.Record) error {
 	if requestID, ok := ctx.Value(contextKeyRequestID).(string); ok {
 		r.Add("request_id", requestID)
 	}
-	if userName, ok := ctx.Value(contextKeyUserName).(string); ok {
-		r.Add("username", userName)
+	if userID, ok := ctx.Value(contextKeyUserID).(string); ok {
+		r.Add("user_id", userID)
+	}
+	if scheduleID, ok := ctx.Value(contextKeyScheduleID).(int64); ok {
+		r.Add("schedule_id", scheduleID)
 	}
 
 	return h.Handler.Handle(ctx, r) //nolint:wrapcheck

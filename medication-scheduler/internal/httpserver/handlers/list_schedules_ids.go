@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/mrvin/tasks-go/medication-scheduler/internal/logger"
 	httpresponse "github.com/mrvin/tasks-go/medication-scheduler/pkg/http/response"
 )
 
@@ -23,20 +24,22 @@ type ResponseListSchedules struct {
 
 func NewListSchedulesIDs(lister ScheduleLister) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
+		op := "List of schedule IDs: "
 		ctx := req.Context()
 		userIDStr := req.URL.Query().Get("user_id")
 		userID, err := uuid.Parse(userIDStr)
 		if err != nil {
 			err := fmt.Errorf("parse user_id: %w", err)
-			slog.ErrorContext(ctx, "List schedules: "+err.Error())
+			slog.ErrorContext(ctx, op+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
+		ctx = logger.WithUserID(ctx, userID.String())
 
 		list, err := lister.ListSchedulesIDs(ctx, userID)
 		if err != nil {
 			err := fmt.Errorf("get list from db: %w", err)
-			slog.ErrorContext(ctx, "List schedules: "+err.Error())
+			slog.ErrorContext(ctx, op+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 		}
 
@@ -48,7 +51,7 @@ func NewListSchedulesIDs(lister ScheduleLister) http.HandlerFunc {
 		jsonResponse, err := json.Marshal(&response)
 		if err != nil {
 			err := fmt.Errorf("marshal response: %w", err)
-			slog.ErrorContext(ctx, "List schedules: "+err.Error())
+			slog.ErrorContext(ctx, op+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -56,11 +59,11 @@ func NewListSchedulesIDs(lister ScheduleLister) http.HandlerFunc {
 		res.WriteHeader(http.StatusOK)
 		if _, err := res.Write(jsonResponse); err != nil {
 			err := fmt.Errorf("write response: %w", err)
-			slog.ErrorContext(ctx, "List schedules: "+err.Error())
+			slog.ErrorContext(ctx, op+err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		slog.InfoContext(ctx, "List of schedule IDs retrieved successfully")
+		slog.InfoContext(ctx, "List of schedule IDs")
 	}
 }
