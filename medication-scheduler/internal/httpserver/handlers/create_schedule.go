@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/mrvin/tasks-go/medication-scheduler/internal/app"
 	"github.com/mrvin/tasks-go/medication-scheduler/internal/logger"
@@ -55,7 +56,7 @@ func NewCreateSchedule(saver ScheduleSaver) http.HandlerFunc {
 			return
 		}
 		if !request.AllLife {
-			if request.BeginDate.After(request.EndDate.Time) {
+			if time.Time(request.BeginDate).After(time.Time(request.EndDate)) {
 				err := errors.New("begin date must be before end date")
 				slog.ErrorContext(ctx, op+err.Error())
 				httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
@@ -63,7 +64,7 @@ func NewCreateSchedule(saver ScheduleSaver) http.HandlerFunc {
 			}
 		}
 
-		request.TimesInt64 = app.GenerateTimes(request.NumPerDay)
+		request.Times = app.GenerateTimes(request.NumPerDay)
 
 		id, err := saver.SaveSchedule(ctx, &request)
 		if err != nil {

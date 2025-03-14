@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 	"github.com/mrvin/tasks-go/medication-scheduler/internal/storage"
 )
 
@@ -26,7 +25,7 @@ func (s *Storage) GetAllTaking(ctx context.Context, userID uuid.UUID, now time.T
 
 	for rows.Next() {
 		var taking storage.AllTaking
-		err = rows.Scan(&taking.NameMedicine, pq.Array(&taking.Times))
+		err = rows.Scan(&taking.NameMedicine, (*storage.TimeOnlyArray)(&taking.Times))
 		if err != nil {
 			return nil, fmt.Errorf("can't scan next row: %w", err)
 		}

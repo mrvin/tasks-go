@@ -3,8 +3,8 @@ package sqlstorage
 import (
 	"context"
 	"fmt"
+	"time"
 
-	"github.com/lib/pq"
 	"github.com/mrvin/tasks-go/medication-scheduler/internal/storage"
 )
 
@@ -12,10 +12,10 @@ func (s *Storage) SaveSchedule(ctx context.Context, schedule *storage.Schedule) 
 	if err := s.insertSchedule.QueryRowContext(ctx,
 		schedule.NameMedicine,
 		schedule.NumPerDay,
-		pq.Array(schedule.TimesInt64),
+		storage.TimeOnlyArray(schedule.Times),
 		schedule.AllLife,
-		schedule.BeginDate.Time,
-		schedule.EndDate.Time,
+		time.Time(schedule.BeginDate),
+		time.Time(schedule.EndDate),
 		schedule.UserID,
 	).Scan(&schedule.ID); err != nil {
 		return 0, fmt.Errorf("saving schedule to db: %w", err)

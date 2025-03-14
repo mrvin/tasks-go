@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/mrvin/tasks-go/medication-scheduler/internal/app"
 	"github.com/mrvin/tasks-go/medication-scheduler/internal/logger"
 	"github.com/mrvin/tasks-go/medication-scheduler/internal/storage"
 	httpresponse "github.com/mrvin/tasks-go/medication-scheduler/pkg/http/response"
@@ -51,7 +50,6 @@ func NewGetSchedule(getter ScheduleGetter) http.HandlerFunc {
 		}
 
 		// Write json response
-		schedule.Times = app.ConvertTimesToStrings(schedule.TimesInt64)
 		schedule.Status = "OK"
 
 		jsonResponse, err := json.Marshal(schedule)

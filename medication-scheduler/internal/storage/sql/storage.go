@@ -7,7 +7,7 @@ import (
 	"time"
 
 	// Add pure Go Postgres driver for the database/sql package.
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 const (
@@ -54,7 +54,7 @@ func (s *Storage) connect(ctx context.Context) error {
 	var err error
 	dbConfStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		s.conf.Host, s.conf.Port, s.conf.User, s.conf.Password, s.conf.Name)
-	s.db, err = sql.Open("postgres", dbConfStr)
+	s.db, err = sql.Open("pgx", dbConfStr)
 	if err != nil {
 		return fmt.Errorf("open: %w", err)
 	}
