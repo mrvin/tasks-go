@@ -51,7 +51,7 @@ $ curl -i -X POST 'http://localhost:8080/schedule' \
 	"num_per_day":21,
 	"all_life":false,
 	"begin_date":"2025-03-10",
-	"end_date":"2025-03-20",
+	"end_date":"2025-04-15",
 	"user_id":"2b468473-e360-47e1-8967-d53af04c93d1"
 }'
 
@@ -104,18 +104,19 @@ $ curl -i -X GET 'http://localhost:8080/schedule?user_id=2b468473-e360-47e1-8967
   "name_medicine": "Medicine 1",
   "num_per_day": 21,
   "times": [
-    "08:00",
-    "08:45",
-     .....
-    "21:30",
-    "22:00"
+    "08:00:00",
+    "08:45:00",
+    ...........
+    "21:15:00",
+    "22:00:00"
   ],
   "all_life": false,
   "begin_date": "2025-03-10",
-  "end_date": "2025-03-20",
+  "end_date": "2025-04-15",
   "user_id": "2b468473-e360-47e1-8967-d53af04c93d1",
   "status": "OK"
 }
+
 ```
 
 #### Получение списка лекарств, которые необходимо принять в ближайший период
@@ -134,11 +135,7 @@ $ curl -i -X GET 'http://localhost:8080/next_takings?user_id=2b468473-e360-47e1-
   "taking_now": [
     {
       "name_medicine": "Medicine 1",
-      "time": "18:00"
-    },
-    {
-      "name_medicine": "Medicine 1",
-      "time": "18:30"
+      "time": "17:45:00"
     }
   ],
   "status": "OK"
@@ -146,7 +143,59 @@ $ curl -i -X GET 'http://localhost:8080/next_takings?user_id=2b468473-e360-47e1-
 ```
 
 ## Сборка и запуск приложения в Docker Compose
-```shell script
+```bash
 $ make run
 ...............
+```
+
+## Структура проекта
+```bash
+$ tree .
+.
+├── cmd
+│   └── medication-scheduler
+│       ├── Dockerfile
+│       ├── main.go
+│       └── Makefile
+├── configs
+│   ├── medication-scheduler.env
+│   └── postgres.env
+├── deployments
+│   └── docker-compose.yaml
+├── go.mod
+├── go.sum
+├── internal
+│   ├── app
+│   │   └── app.go
+│   ├── config
+│   │   └── config.go
+│   ├── httpserver
+│   │   ├── handlers
+│   │   │   ├── create_schedule.go
+│   │   │   ├── get_next_takings.go
+│   │   │   ├── get_schedule.go
+│   │   │   ├── health.go
+│   │   │   └── list_schedules_ids.go
+│   │   └── server.go
+│   ├── logger
+│   │   └── logger.go
+│   └── storage
+│       ├── sql
+│       │   ├── get_all_taking.go
+│       │   ├── get_schedule.go
+│       │   ├── list_schedules_ids.go
+│       │   ├── save_schedule.go
+│       │   └── storage.go
+│       └── storage.go
+├── Makefile
+├── migrations
+│   ├── 000001_init_schema.down.sql
+│   └── 000001_init_schema.up.sql
+├── pkg
+│   └── http
+│       ├── logger
+│       │   └── logger.go
+│       └── response
+│           └── response.go
+└── README.md
 ```
