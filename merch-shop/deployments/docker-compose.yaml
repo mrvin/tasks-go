@@ -1,0 +1,38 @@
+services:
+  shop-service:
+      build:
+        context: ../
+        dockerfile: cmd/api-shop/Dockerfile
+      container_name: shop-service
+      ports:
+        - "8080:8080"
+      env_file:
+        - ../configs/api-shop.env
+        - ../configs/postgres.env
+      depends_on:
+        postgres:
+            condition: service_healthy
+      networks:
+        - internal
+  
+  postgres:
+    image: postgres:17.0-alpine3.20
+    container_name: postgres
+    env_file:
+      - ../configs/postgres.env
+    volumes:
+      # "./migrations/init.sql" - путь к миграциям БД
+      - ../migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${HOME}/volumes_docker/shop/postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+      interval: 3s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - internal
+networks:
+  internal:
