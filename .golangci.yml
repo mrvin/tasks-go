@@ -17,7 +17,6 @@ linters:
     - gochecknoinits
     - godox
     - gofumpt
-    - gomnd
     - lll
     - nakedret
     - nlreturn
@@ -25,5 +24,4 @@ linters:
     - gomodguard
     - varnamelen
     - depguard
-    - exportloopref
 
