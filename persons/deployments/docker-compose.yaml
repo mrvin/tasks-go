@@ -4,7 +4,10 @@ services:
          context: ../
          dockerfile: cmd/persons-server/Dockerfile
         ports:
-         - "8088:8088" # REST API
+         - "8080:8080" # REST API
+        env_file:
+         - ../configs/postgres.env
+         - ../configs/persons.env
         depends_on:
          - migrate
 
@@ -23,10 +26,8 @@ services:
         ports:
          - "5432"
         user: root
-        environment:
-         POSTGRES_PASSWORD: persons-user
-         POSTGRES_USER: persons-user
-         POSTGRES_DB: persons-db
+        env_file:
+         - ../configs/postgres.env
         healthcheck:
           test: ["CMD", "pg_isready", "-q", "-d", "persons-db", "-U", "persons-user"]
         volumes:
