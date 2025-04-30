@@ -1,4 +1,3 @@
-version: "3.9"
 services:
     persons:
         build:
@@ -7,10 +6,16 @@ services:
         ports:
          - "8088:8088" # REST API
         depends_on:
+         - migrate
+
+    migrate:
+        image: migrate/migrate:v4.18.3
+        command: ["-path", "/migrations", "-database",  "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable", "up"]
+        depends_on:
           postgres:
             condition: service_healthy
         volumes:
-         - ./../configs/persons.yml:/etc/persons/persons.yml
+         - ./../migrations:/migrations
 
     # Create service with PostgreSQL.
     postgres:
