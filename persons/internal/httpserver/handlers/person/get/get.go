@@ -17,6 +17,15 @@ type PersonGetter interface {
 	Get(ctx context.Context, id int64) (*storage.Person, error)
 }
 
+// New сreates a handler for get person.
+//
+//	@Summary			Get person
+//	@Description		Get person
+//	@Tags			persons
+//	@Produce			json
+//	@Param        id path int64 true "person id"
+//	@Success      200  {string} string "OK"
+//	@Router       /persons [get]
 func New(getter PersonGetter) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		idStr := req.PathValue("id")

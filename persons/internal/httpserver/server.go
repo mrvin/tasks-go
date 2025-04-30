@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	// import docs generated with swag init.
+	_ "github.com/mrvin/tasks-go/persons/docs"
 	"github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/health"
 	createperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/create"
 	deleteperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/delete"
@@ -15,6 +17,7 @@ import (
 	updateperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/update"
 	"github.com/mrvin/tasks-go/persons/internal/storage"
 	"github.com/mrvin/tasks-go/persons/pkg/http/logger"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 const (
@@ -31,6 +34,7 @@ type Server struct {
 	http.Server
 }
 
+// @host			localhost:8080
 func New(conf *Conf, st storage.PersonStorage) *Server {
 	mux := http.NewServeMux()
 
@@ -42,6 +46,10 @@ func New(conf *Conf, st storage.PersonStorage) *Server {
 	mux.HandleFunc(http.MethodDelete+" /persons/{id}", deleteperson.New(st))
 
 	mux.HandleFunc(http.MethodGet+" /persons", listpersons.New(st))
+
+	mux.Handle("/swagger/", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
+	))
 
 	loggerServer := logger.Logger{Inner: mux}
 

@@ -12,7 +12,7 @@ type loggingResponseWriter struct {
 	totalWritByte int
 }
 
-func NewLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
+func newLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
 	return &loggingResponseWriter{w, http.StatusOK, 0}
 }
 
@@ -21,7 +21,7 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
-func (lrw *loggingResponseWriter) Write(slByte []byte) (writeByte int, err error) {
+func (lrw *loggingResponseWriter) Write(slByte []byte) (writeByte int, err error) { //nolint:nonamedreturns
 	writeByte, err = lrw.ResponseWriter.Write(slByte)
 	lrw.totalWritByte += writeByte
 	return
@@ -36,11 +36,9 @@ func (l *Logger) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		slog.String("method", req.Method),
 		slog.String("path", req.URL.Path),
 		slog.String("addr", req.RemoteAddr),
-		//slog.String("user_agent", req.UserAgent()),
-		//slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 	timeStart := time.Now()
-	lrw := NewLoggingResponseWriter(res)
+	lrw := newLoggingResponseWriter(res)
 	defer func() {
 		logReq.Info("Request "+req.Proto,
 			slog.Int("status", lrw.statusCode),

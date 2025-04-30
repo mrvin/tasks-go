@@ -27,6 +27,16 @@ type ResponseCreate struct {
 	Status string `json:"status"`
 }
 
+// New сreates a person creation handler.
+//
+//	@Summary      Create person
+//	@Description  Create new person
+//	@Tags         persons
+//	@Accept       json
+//	@Produce      json
+//	@Param        input body storage.Person true "person data"
+//	@Success      201  {string} string "OK"
+//	@Router       /persons [post]
 func New(creator PersonCreator) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		// Read json request

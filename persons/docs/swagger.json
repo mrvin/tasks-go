@@ -1,0 +1,137 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "host": "localhost:8080",
+    "paths": {
+        "/persons": {
+            "get": {
+                "description": "Get list persons",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "persons"
+                ],
+                "summary": "List persons",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit persons",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset persons",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Greater than or equal to age",
+                        "name": "age_from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Less than or equal to age",
+                        "name": "age_to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by gender",
+                        "name": "gender",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by country id",
+                        "name": "country_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/storage.Person"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create new person",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "persons"
+                ],
+                "summary": "Create person",
+                "parameters": [
+                    {
+                        "description": "person data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.Person"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "storage.Person": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer",
+                    "example": 43
+                },
+                "country_id": {
+                    "type": "string",
+                    "example": "UA"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "male"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Dmitriy"
+                },
+                "patronymic": {
+                    "type": "string",
+                    "example": "Vasilevich"
+                },
+                "surname": {
+                    "type": "string",
+                    "example": "Ushakov"
+                }
+            }
+        }
+    }
+}

@@ -26,6 +26,20 @@ type ResponsePersons struct {
 	Status  string           `json:"status"`
 }
 
+// New сreates a handler for getting a list of persons.
+//
+//	@Summary			List persons
+//	@Description		Get list persons
+//	@Tags			persons
+//	@Produce			json
+//	@Param			limit query uint64 false "Limit persons"
+//	@Param			offset query uint64 false "offset persons"
+//	@Param			age_from query uint8 false "Greater than or equal to age"
+//	@Param			age_to query uint8 false "Less than or equal to age"
+//	@Param			gender query string false "Filter by gender"
+//	@Param			country_id query string false "Filter by country id"
+//	@Success      200  {array} storage.Person
+//	@Router       /persons [get]
 func New(lister PersonLister) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		var err error

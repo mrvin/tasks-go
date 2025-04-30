@@ -12,6 +12,7 @@ WORKDIR  /app
 COPY cmd/persons-server cmd/persons-server
 COPY internal internal
 COPY pkg pkg
+COPY docs docs
 
 # Copy and download dependency using go mod.
 COPY go.mod go.sum ./

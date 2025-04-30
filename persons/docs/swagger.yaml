@@ -1,0 +1,91 @@
+definitions:
+  storage.Person:
+    properties:
+      age:
+        example: 43
+        type: integer
+      country_id:
+        example: UA
+        type: string
+      gender:
+        example: male
+        type: string
+      id:
+        example: 0
+        type: integer
+      name:
+        example: Dmitriy
+        type: string
+      patronymic:
+        example: Vasilevich
+        type: string
+      surname:
+        example: Ushakov
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+paths:
+  /persons:
+    get:
+      description: Get list persons
+      parameters:
+      - description: Limit persons
+        in: query
+        name: limit
+        type: integer
+      - description: offset persons
+        in: query
+        name: offset
+        type: integer
+      - description: Greater than or equal to age
+        in: query
+        name: age_from
+        type: integer
+      - description: Less than or equal to age
+        in: query
+        name: age_to
+        type: integer
+      - description: Filter by gender
+        in: query
+        name: gender
+        type: string
+      - description: Filter by country id
+        in: query
+        name: country_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/storage.Person'
+            type: array
+      summary: List persons
+      tags:
+      - persons
+    post:
+      consumes:
+      - application/json
+      description: Create new person
+      parameters:
+      - description: person data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/storage.Person'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: OK
+          schema:
+            type: string
+      summary: Create person
+      tags:
+      - persons
+swagger: "2.0"
