@@ -1,10 +1,10 @@
 ## Build
-FROM golang:1.21.6-alpine AS build
+FROM golang:1.24.0-alpine AS build
 
 MAINTAINER mrvin <v.v.vinogradovv@gmail.com>
 
 RUN apk add --update make
-RUN apk --update add ca-certificates
+RUN apk add --update ca-certificates
 
 WORKDIR  /app
 
@@ -27,6 +27,6 @@ WORKDIR /
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build ["/app/bin/persons-server", "/"]
 
-EXPOSE 8088
+EXPOSE 8080
 
 ENTRYPOINT ["/persons-server"]

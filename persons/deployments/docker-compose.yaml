@@ -22,14 +22,14 @@ services:
 
     # Create service with PostgreSQL.
     postgres:
-        image: postgres:15.2-alpine3.17
+        image: postgres:17.4-alpine3.21
         ports:
          - "5432"
         user: root
         env_file:
          - ../configs/postgres.env
         healthcheck:
-          test: ["CMD", "pg_isready", "-q", "-d", "persons-db", "-U", "persons-user"]
+          test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+          interval: 3s
         volumes:
          - ${HOME}/volumes_docker/persons/postgres-data:/var/lib/postgresql/data
-
