@@ -24,12 +24,12 @@ type RequestUpdate struct {
 	Patronymic string `json:"patronymic,omitempty"`
 	Age        int    `json:"age"`
 	Gender     string `json:"gender"`
-	CountryID  string `json:"countryID"`
+	CountryID  string `json:"country_id"`
 }
 
 func New(updater PersonUpdater) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		idStr := req.URL.Query().Get("id")
+		idStr := req.PathValue("id")
 		if idStr == "" {
 			err := errors.New("id is empty")
 			slog.Error(err.Error())
@@ -80,7 +80,7 @@ func New(updater PersonUpdater) http.HandlerFunc {
 		}
 
 		// Write json response
-		httpresponse.WriteOK(res)
+		httpresponse.WriteOK(res, http.StatusOK)
 
 		slog.Info("Person information update was successful")
 	}

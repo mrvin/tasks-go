@@ -2,11 +2,12 @@ package httpserver
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"log/slog"
 	"net/http"
 	"time"
 
+	"github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/health"
 	createperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/create"
 	deleteperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/delete"
 	getperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/get"
@@ -14,13 +15,16 @@ import (
 	updateperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/update"
 	"github.com/mrvin/tasks-go/persons/internal/storage"
 	"github.com/mrvin/tasks-go/persons/pkg/http/logger"
-	"github.com/mrvin/tasks-go/persons/pkg/http/resolver"
-	pathresolver "github.com/mrvin/tasks-go/persons/pkg/http/resolver/path"
+)
+
+const (
+	readTimeout  = 5  // in second
+	writeTimeout = 10 // in second
+	idleTimeout  = 1  // in minute
 )
 
 type Conf struct {
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
+	Addr string
 }
 
 type Server struct {
@@ -28,54 +32,45 @@ type Server struct {
 }
 
 func New(conf *Conf, st storage.PersonStorage) *Server {
-	res := pathresolver.New()
+	mux := http.NewServeMux()
 
-	res.Add(http.MethodPost+" /person", createperson.New(st))
-	res.Add(http.MethodGet+" /person/", getperson.New(st))
-	res.Add(http.MethodPut+" /person/", updateperson.New(st))
-	res.Add(http.MethodDelete+" /person/", deleteperson.New(st))
-	res.Add(http.MethodGet+" /list-persons", listpersons.New(st))
+	mux.HandleFunc(http.MethodGet+" /health", health.Health)
 
-	loggerServer := logger.Logger{Inner: &Router{res}}
+	mux.HandleFunc(http.MethodPost+" /persons", createperson.New(st))
+	mux.HandleFunc(http.MethodGet+" /persons/{id}", getperson.New(st))
+	mux.HandleFunc(http.MethodPut+" /persons/{id}", updateperson.New(st))
+	mux.HandleFunc(http.MethodDelete+" /persons/{id}", deleteperson.New(st))
+
+	mux.HandleFunc(http.MethodGet+" /persons", listpersons.New(st))
+
+	loggerServer := logger.Logger{Inner: mux}
 
 	return &Server{
+		//nolint:exhaustruct
 		http.Server{
-			Addr:         fmt.Sprintf("%s:%d", conf.Host, conf.Port),
+			Addr:         conf.Addr,
 			Handler:      &loggerServer,
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
-			IdleTimeout:  1 * time.Minute,
+			ReadTimeout:  readTimeout * time.Second,
+			WriteTimeout: writeTimeout * time.Second,
+			IdleTimeout:  idleTimeout * time.Minute,
 		},
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Run(ctx context.Context) {
+	go func() {
+		if err := s.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("Failed to start http server: " + err.Error())
+			return
+		}
+	}()
 	slog.Info("Start http server: http://" + s.Addr)
-	if err := s.ListenAndServe(); err != nil {
-		return fmt.Errorf("start http server: %w", err)
-	}
-	return nil
-}
 
-func (s *Server) Stop(ctx context.Context) error {
-	slog.Info("Stop http server")
+	<-ctx.Done()
+
 	if err := s.Shutdown(ctx); err != nil {
-		return fmt.Errorf("stop http server: %w", err)
-	}
-
-	return nil
-}
-
-type Router struct {
-	resolver.Resolver
-}
-
-func (r *Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	check := req.Method + " " + req.URL.Path
-	if handlerFunc := r.Get(check); handlerFunc != nil {
-		handlerFunc(res, req)
+		slog.Error("Failed to stop http server: " + err.Error())
 		return
 	}
-
-	http.NotFound(res, req)
+	slog.Info("Stop http server")
 }

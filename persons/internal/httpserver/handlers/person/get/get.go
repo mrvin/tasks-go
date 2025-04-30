@@ -19,7 +19,7 @@ type PersonGetter interface {
 
 func New(getter PersonGetter) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		idStr := req.URL.Query().Get("id")
+		idStr := req.PathValue("id")
 		if idStr == "" {
 			err := errors.New("id is empty")
 			slog.Error(err.Error())

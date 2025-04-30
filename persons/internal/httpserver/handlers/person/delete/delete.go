@@ -17,7 +17,7 @@ type PersonDeleter interface {
 
 func New(deleter PersonDeleter) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		idStr := req.URL.Query().Get("id")
+		idStr := req.PathValue("id")
 		if idStr == "" {
 			err := errors.New("id is empty")
 			slog.Error(err.Error())
@@ -40,7 +40,7 @@ func New(deleter PersonDeleter) http.HandlerFunc {
 		}
 
 		// Write json response
-		httpresponse.WriteOK(res)
+		httpresponse.WriteOK(res, http.StatusOK)
 
 		slog.Info("Person deletion was successful")
 	}
