@@ -6,19 +6,19 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/lib/pq"
+	// Add pure Go Postgres driver for the database/sql package.
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/mrvin/tasks-go/persons/pkg/retry"
 )
 
 const retriesConnect = 5
 
 type Conf struct {
-	Driver   string `yaml:"driver"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	Name     string `yaml:"name"`
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Name     string
 }
 
 type Storage struct {
@@ -30,7 +30,6 @@ type Storage struct {
 	getPerson    *sql.Stmt
 	updatePerson *sql.Stmt
 	deletePerson *sql.Stmt
-	listPersons  *sql.Stmt
 }
 
 func New(ctx context.Context, conf *Conf) (*Storage, error) {
@@ -51,9 +50,9 @@ func New(ctx context.Context, conf *Conf) (*Storage, error) {
 
 func (s *Storage) Connect(ctx context.Context) error {
 	var err error
-	dbConfStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	dbConfStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		s.conf.Host, s.conf.Port, s.conf.User, s.conf.Password, s.conf.Name)
-	s.db, err = sql.Open(s.conf.Driver, dbConfStr)
+	s.db, err = sql.Open("pgx", dbConfStr)
 	if err != nil {
 		return fmt.Errorf("open db: %w", err)
 	}
@@ -122,14 +121,6 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf(fmtStrErr, "delete person", err)
 	}
-	sqlListPersons := `
-		SELECT id, name, surname, patronymic, age, gender, country_id
-		FROM persons 
-		ORDER BY id`
-	s.listPersons, err = s.db.PrepareContext(ctx, sqlListPersons)
-	if err != nil {
-		return fmt.Errorf(fmtStrErr, "list persons", err)
-	}
 
 	return nil
 }
@@ -139,7 +130,6 @@ func (s *Storage) Close() error {
 	s.getPerson.Close()
 	s.updatePerson.Close()
 	s.deletePerson.Close()
-	s.listPersons.Close()
 
 	return s.db.Close() //nolint:wrapcheck
 }

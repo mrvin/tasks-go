@@ -9,7 +9,8 @@ type PersonStorage interface {
 	Get(ctx context.Context, id int64) (*Person, error)
 	Update(ctx context.Context, id int64, person *Person) error
 	Delete(ctx context.Context, id int64) error
-	List(ctx context.Context) ([]Person, error)
+
+	List(ctx context.Context, limit, offset uint64, ageFrom, ageTo uint64, gender, countryID string) ([]Person, error)
 }
 
 type Person struct {
@@ -19,5 +20,5 @@ type Person struct {
 	Patronymic string `json:"patronymic,omitempty"`
 	Age        int    `json:"age"`
 	Gender     string `json:"gender"`
-	CountryID  string `json:"countryID"`
+	CountryID  string `json:"country_id"`
 }
