@@ -23,7 +23,7 @@ type PersonLister interface {
 
 type ResponsePersons struct {
 	Persons []storage.Person `json:"persons"`
-	Status  string           `json:"status"`
+	Status  string           `example:"OK"   json:"status"`
 }
 
 // New сreates a handler for getting a list of persons.
@@ -38,8 +38,8 @@ type ResponsePersons struct {
 //	@Param			age_to query uint8 false "Less than or equal to age"
 //	@Param			gender query string false "Filter by gender"
 //	@Param			country_id query string false "Filter by country id"
-//	@Success      200  {array} storage.Person
-//	@Router       /persons [get]
+//	@Success			200  {object} ResponsePersons
+//	@Router			/persons [get]
 func New(lister PersonLister) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		var err error

@@ -14,11 +14,11 @@ type PersonStorage interface {
 }
 
 type Person struct {
-	ID         int64  `example:"0"          json:"id"`
+	ID         int64  `example:"1"          json:"id"`
 	Name       string `example:"Dmitriy"    json:"name"`
 	Surname    string `example:"Ushakov"    json:"surname"`
 	Patronymic string `example:"Vasilevich" json:"patronymic,omitempty"`
 	Age        int    `example:"43"         json:"age"`
 	Gender     string `example:"male"       json:"gender"`
-	CountryID  string `example:"UA"         json:"country_id"`
+	CountryID  string `example:"UA"         json:"country_id"` //nolint:tagliatelle
 }

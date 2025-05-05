@@ -11,7 +11,12 @@ import (
 	"github.com/mrvin/tasks-go/persons/pkg/retry"
 )
 
-const retriesConnect = 5
+const (
+	maxOpenConns    = 25
+	maxIdleConns    = 25
+	connMaxLifetime = 5 * time.Minute
+	retriesConnect  = 5
+)
 
 type Conf struct {
 	Host     string
@@ -62,9 +67,9 @@ func (s *Storage) Connect(ctx context.Context) error {
 	}
 
 	// Setting db connections pool.
-	s.db.SetMaxOpenConns(25)
-	s.db.SetMaxIdleConns(25)
-	s.db.SetConnMaxLifetime(5 * time.Minute)
+	s.db.SetMaxOpenConns(maxOpenConns)
+	s.db.SetMaxIdleConns(maxIdleConns)
+	s.db.SetConnMaxLifetime(connMaxLifetime)
 
 	return nil
 }

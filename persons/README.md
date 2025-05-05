@@ -157,7 +157,7 @@ $ curl -i -X GET 'http://localhost:8080/persons?limit=10&offset=0&age_from=18&ag
   "status": "OK"
 }
 ```
-#### Документация swagger
+#### Документация OpenAPI
  - Эндпоинт – GET /swagger/index.html
 
 ### Сборка и запуск приложения в Docker Compose

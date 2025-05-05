@@ -34,8 +34,8 @@ type ResponseCreate struct {
 //	@Tags         persons
 //	@Accept       json
 //	@Produce      json
-//	@Param        input body storage.Person true "person data"
-//	@Success      201  {string} string "OK"
+//	@Param        input body RequestCreate true "person data"
+//	@Success      201  {object} ResponseCreate
 //	@Router       /persons [post]
 func New(creator PersonCreator) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -72,6 +72,7 @@ func New(creator PersonCreator) http.HandlerFunc {
 			slog.Warn("get country ID: " + err.Error())
 		}
 
+		//nolint: exhaustruct
 		person := storage.Person{
 			Name:       request.Name,
 			Surname:    request.Surname,

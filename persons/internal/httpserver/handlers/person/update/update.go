@@ -27,6 +27,17 @@ type RequestUpdate struct {
 	CountryID  string `json:"country_id"`
 }
 
+// New сreates a person updation handler.
+//
+//	@Summary			Update person
+//	@Description		Update person information
+//	@Tags			persons
+//	@Accept			json
+//	@Produce			json
+//	@Param			id path int64 true "person id"
+//	@Param			input body RequestUpdate true "person data"
+//	@Success			200  {object} response.RequestOK
+//	@Router			/persons/{id} [put]
 func New(updater PersonUpdater) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		idStr := req.PathValue("id")
@@ -63,6 +74,7 @@ func New(updater PersonUpdater) http.HandlerFunc {
 			return
 		}
 
+		//nolint: exhaustruct
 		person := storage.Person{
 			Name:       request.Name,
 			Surname:    request.Surname,

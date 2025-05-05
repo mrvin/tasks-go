@@ -11,7 +11,7 @@ import (
 	_ "github.com/mrvin/tasks-go/persons/docs"
 	"github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/health"
 	createperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/create"
-	deleteperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/delete"
+	deleteperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/deletep"
 	getperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/get"
 	listpersons "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/list"
 	updateperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/update"
@@ -34,7 +34,7 @@ type Server struct {
 	http.Server
 }
 
-// @host			localhost:8080
+// @host			localhost:8080.
 func New(conf *Conf, st storage.PersonStorage) *Server {
 	mux := http.NewServeMux()
 

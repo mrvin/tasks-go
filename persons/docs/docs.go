@@ -68,10 +68,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/storage.Person"
-                            }
+                            "$ref": "#/definitions/list.ResponsePersons"
                         }
                     }
                 }
@@ -95,15 +92,110 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.Person"
+                            "$ref": "#/definitions/create.RequestCreate"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/create.ResponseCreate"
+                        }
+                    }
+                }
+            }
+        },
+        "/persons/{id}": {
+            "get": {
+                "description": "Get information about a person",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "persons"
+                ],
+                "summary": "Get person",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "person id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/storage.Person"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update person information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "persons"
+                ],
+                "summary": "Update person",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "person id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "person data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/update.RequestUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestOK"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete person",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "persons"
+                ],
+                "summary": "Delete person",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "person id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestOK"
                         }
                     }
                 }
@@ -111,6 +203,55 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "create.RequestCreate": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "create.ResponseCreate": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "list.ResponsePersons": {
+            "type": "object",
+            "properties": {
+                "persons": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/storage.Person"
+                    }
+                },
+                "status": {
+                    "type": "string",
+                    "example": "OK"
+                }
+            }
+        },
+        "response.RequestOK": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "OK"
+                }
+            }
+        },
         "storage.Person": {
             "type": "object",
             "properties": {
@@ -128,7 +269,7 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer",
-                    "example": 0
+                    "example": 1
                 },
                 "name": {
                     "type": "string",
@@ -141,6 +282,29 @@ const docTemplate = `{
                 "surname": {
                     "type": "string",
                     "example": "Ushakov"
+                }
+            }
+        },
+        "update.RequestUpdate": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "country_id": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
                 }
             }
         }

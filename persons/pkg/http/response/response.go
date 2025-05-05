@@ -7,10 +7,17 @@ import (
 	"net/http"
 )
 
+type RequestOK struct {
+	Status string `example:"OK" json:"status"`
+}
+
+type RequestError struct {
+	Status string `example:"Error" json:"status"`
+	Error  string `json:"error"`
+}
+
 func WriteOK(res http.ResponseWriter, status int) {
-	response := struct {
-		Status string `json:"status"`
-	}{
+	response := RequestOK{
 		Status: "OK",
 	}
 	jsonResponse, err := json.Marshal(&response)
@@ -32,10 +39,7 @@ func WriteOK(res http.ResponseWriter, status int) {
 }
 
 func WriteError(res http.ResponseWriter, msgError string, status int) {
-	response := struct {
-		Status string `json:"status"`
-		Error  string `json:"error"`
-	}{
+	response := RequestError{
 		Status: "Error",
 		Error:  msgError,
 	}

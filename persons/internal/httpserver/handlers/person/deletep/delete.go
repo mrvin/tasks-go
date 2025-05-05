@@ -1,4 +1,4 @@
-package delete
+package deletep
 
 import (
 	"context"
@@ -15,6 +15,15 @@ type PersonDeleter interface {
 	Delete(ctx context.Context, id int64) error
 }
 
+// New сreates a handler for delete person.
+//
+//	@Summary			Delete person
+//	@Description		Delete person
+//	@Tags			persons
+//	@Produce			json
+//	@Param			id path int64 true "person id"
+//	@Success			200  {object} response.RequestOK
+//	@Router			/persons/{id} [delete]
 func New(deleter PersonDeleter) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		idStr := req.PathValue("id")

@@ -20,12 +20,12 @@ type PersonGetter interface {
 // New сreates a handler for get person.
 //
 //	@Summary			Get person
-//	@Description		Get person
+//	@Description		Get information about a person
 //	@Tags			persons
 //	@Produce			json
-//	@Param        id path int64 true "person id"
-//	@Success      200  {string} string "OK"
-//	@Router       /persons [get]
+//	@Param			id path int64 true "person id"
+//	@Success			200  {object} storage.Person
+//	@Router			/persons/{id} [get]
 func New(getter PersonGetter) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		idStr := req.PathValue("id")
