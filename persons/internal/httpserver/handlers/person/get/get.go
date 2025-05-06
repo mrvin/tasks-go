@@ -25,6 +25,8 @@ type PersonGetter interface {
 //	@Produce			json
 //	@Param			id path int64 true "person id"
 //	@Success			200  {object} storage.Person
+//	@Failure			400  {object}  response.RequestError
+//	@Failure			500  {object}  response.RequestError
 //	@Router			/persons/{id} [get]
 func New(getter PersonGetter) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -51,6 +53,7 @@ func New(getter PersonGetter) http.HandlerFunc {
 			return
 		}
 
+		// Write json response
 		jsonPerson, err := json.Marshal(&person)
 		if err != nil {
 			err := fmt.Errorf("marshal response: %w", err)
@@ -58,7 +61,6 @@ func New(getter PersonGetter) http.HandlerFunc {
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(http.StatusOK)
 		if _, err := res.Write(jsonPerson); err != nil {

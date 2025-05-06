@@ -3,13 +3,10 @@ package sqlstorage
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/mrvin/tasks-go/persons/internal/storage"
 )
-
-var ErrNoPersonID = errors.New("no person with id")
 
 func (s *Storage) Get(ctx context.Context, id int64) (*storage.Person, error) {
 	var person storage.Person
@@ -23,7 +20,7 @@ func (s *Storage) Get(ctx context.Context, id int64) (*storage.Person, error) {
 		&person.CountryID,
 	); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("get person: %w %v", ErrNoPersonID, id)
+			return nil, fmt.Errorf("%w %v", storage.ErrNoPersonID, id)
 		}
 		return nil, fmt.Errorf("get person: %w", err)
 	}

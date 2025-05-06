@@ -2,17 +2,22 @@ definitions:
   create.RequestCreate:
     properties:
       name:
+        example: Dmitriy
         type: string
       patronymic:
+        example: Vasilevich
         type: string
       surname:
+        example: Ushakov
         type: string
     type: object
   create.ResponseCreate:
     properties:
       id:
+        example: 1
         type: integer
       status:
+        example: OK
         type: string
     type: object
   list.ResponsePersons:
@@ -23,6 +28,15 @@ definitions:
         type: array
       status:
         example: OK
+        type: string
+    type: object
+  response.RequestError:
+    properties:
+      error:
+        example: error description
+        type: string
+      status:
+        example: Error
         type: string
     type: object
   response.RequestOK:
@@ -74,6 +88,19 @@ host: localhost:8080
 info:
   contact: {}
 paths:
+  /health:
+    get:
+      description: Checking functionality
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.RequestOK'
+      summary: Checking functionality
+      tags:
+      - health
   /persons:
     get:
       description: Get list persons
@@ -109,6 +136,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/list.ResponsePersons'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.RequestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.RequestError'
       summary: List persons
       tags:
       - persons
@@ -130,6 +165,14 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/create.ResponseCreate'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.RequestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.RequestError'
       summary: Create person
       tags:
       - persons
@@ -149,6 +192,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.RequestOK'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.RequestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.RequestError'
       summary: Delete person
       tags:
       - persons
@@ -167,6 +218,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/storage.Person'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.RequestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.RequestError'
       summary: Get person
       tags:
       - persons
@@ -193,6 +252,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.RequestOK'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.RequestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.RequestError'
       summary: Update person
       tags:
       - persons

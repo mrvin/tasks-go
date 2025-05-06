@@ -24,7 +24,7 @@ type RequestUpdate struct {
 	Patronymic string `json:"patronymic,omitempty"`
 	Age        int    `json:"age"`
 	Gender     string `json:"gender"`
-	CountryID  string `json:"country_id"`
+	CountryID  string `json:"country_id"` //nolint:tagliatelle
 }
 
 // New сreates a person updation handler.
@@ -37,6 +37,8 @@ type RequestUpdate struct {
 //	@Param			id path int64 true "person id"
 //	@Param			input body RequestUpdate true "person data"
 //	@Success			200  {object} response.RequestOK
+//	@Failure			400  {object}  response.RequestError
+//	@Failure			500  {object}  response.RequestError
 //	@Router			/persons/{id} [put]
 func New(updater PersonUpdater) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -57,7 +59,6 @@ func New(updater PersonUpdater) http.HandlerFunc {
 
 		// Read json request
 		var request RequestUpdate
-
 		body, err := io.ReadAll(req.Body)
 		defer req.Body.Close()
 		if err != nil {
@@ -66,7 +67,6 @@ func New(updater PersonUpdater) http.HandlerFunc {
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		if err := json.Unmarshal(body, &request); err != nil {
 			err := fmt.Errorf("unmarshal body request: %w", err)
 			slog.Error(err.Error())
@@ -83,7 +83,6 @@ func New(updater PersonUpdater) http.HandlerFunc {
 			Gender:     request.Gender,
 			CountryID:  request.CountryID,
 		}
-
 		if err := updater.Update(req.Context(), id, &person); err != nil {
 			err := fmt.Errorf("update person: %w", err)
 			slog.Error(err.Error())

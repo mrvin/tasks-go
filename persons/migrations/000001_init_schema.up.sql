@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS persons (
-	id serial primary key,
-	name text,
-	surname text,
-	patronymic text,
-	age int,
-	gender text,
-	country_id text
+	id SERIAL NOT NULL UNIQUE PRIMARY KEY,
+	name TEXT,
+	surname TEXT,
+	patronymic TEXT,
+	age INT,
+	gender TEXT,
+	country_id TEXT
 );

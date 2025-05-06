@@ -23,6 +23,8 @@ type PersonDeleter interface {
 //	@Produce			json
 //	@Param			id path int64 true "person id"
 //	@Success			200  {object} response.RequestOK
+//	@Failure			400  {object}  response.RequestError
+//	@Failure			500  {object}  response.RequestError
 //	@Router			/persons/{id} [delete]
 func New(deleter PersonDeleter) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {

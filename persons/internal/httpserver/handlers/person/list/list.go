@@ -39,6 +39,8 @@ type ResponsePersons struct {
 //	@Param			gender query string false "Filter by gender"
 //	@Param			country_id query string false "Filter by country id"
 //	@Success			200  {object} ResponsePersons
+//	@Failure			400  {object}  response.RequestError
+//	@Failure			500  {object}  response.RequestError
 //	@Router			/persons [get]
 func New(lister PersonLister) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -103,7 +105,6 @@ func New(lister PersonLister) http.HandlerFunc {
 			Persons: persons,
 			Status:  "OK",
 		}
-
 		jsonResponsePersons, err := json.Marshal(response)
 		if err != nil {
 			err := fmt.Errorf("marshal response: %w", err)
@@ -111,7 +112,6 @@ func New(lister PersonLister) http.HandlerFunc {
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(http.StatusOK)
 		if _, err := res.Write(jsonResponsePersons); err != nil {

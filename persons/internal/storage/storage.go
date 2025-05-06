@@ -2,7 +2,10 @@ package storage
 
 import (
 	"context"
+	"errors"
 )
+
+var ErrNoPersonID = errors.New("no person with id")
 
 type PersonStorage interface {
 	Create(ctx context.Context, person *Person) (int64, error)

@@ -12,8 +12,8 @@ type RequestOK struct {
 }
 
 type RequestError struct {
-	Status string `example:"Error" json:"status"`
-	Error  string `json:"error"`
+	Status string `example:"Error"             json:"status"`
+	Error  string `example:"error description" json:"error"`
 }
 
 func WriteOK(res http.ResponseWriter, status int) {

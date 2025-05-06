@@ -34,7 +34,7 @@ type Server struct {
 	http.Server
 }
 
-// @host			localhost:8080.
+// @host		localhost:8080
 func New(conf *Conf, st storage.PersonStorage) *Server {
 	mux := http.NewServeMux()
 

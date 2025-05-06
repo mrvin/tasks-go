@@ -16,6 +16,26 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/health": {
+            "get": {
+                "description": "Checking functionality",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Checking functionality",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestOK"
+                        }
+                    }
+                }
+            }
+        },
         "/persons": {
             "get": {
                 "description": "Get list persons",
@@ -70,6 +90,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/list.ResponsePersons"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
                     }
                 }
             },
@@ -102,6 +134,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/create.ResponseCreate"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
                     }
                 }
             }
@@ -130,6 +174,18 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/storage.Person"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
                         }
                     }
                 }
@@ -170,6 +226,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.RequestOK"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
                     }
                 }
             },
@@ -197,6 +265,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.RequestOK"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
                     }
                 }
             }
@@ -207,13 +287,16 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Dmitriy"
                 },
                 "patronymic": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Vasilevich"
                 },
                 "surname": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Ushakov"
                 }
             }
         },
@@ -221,10 +304,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "OK"
                 }
             }
         },
@@ -240,6 +325,19 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "OK"
+                }
+            }
+        },
+        "response.RequestError": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "error description"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "Error"
                 }
             }
         },

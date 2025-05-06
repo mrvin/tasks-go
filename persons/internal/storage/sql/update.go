@@ -26,7 +26,7 @@ func (s *Storage) Update(ctx context.Context, id int64, person *storage.Person) 
 		return fmt.Errorf("update person: %w", err)
 	}
 	if count != 1 {
-		return fmt.Errorf("update person: %w %v", ErrNoPersonID, id)
+		return fmt.Errorf("%w %v", storage.ErrNoPersonID, id)
 	}
 
 	return nil
