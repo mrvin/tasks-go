@@ -1,3 +1,7 @@
 DROP TABLE IF EXISTS persons;
 
 DROP TYPE IF EXISTS gender_type;
+
+DROP INDEX IF EXISTS idx_age;
+DROP INDEX IF EXISTS idx_gender;
+DROP INDEX IF EXISTS idx_country_id;

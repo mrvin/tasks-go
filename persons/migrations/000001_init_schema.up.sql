@@ -9,3 +9,6 @@ CREATE TABLE IF NOT EXISTS persons (
 	gender gender_type,
 	country_id TEXT
 );
+CREATE INDEX IF NOT EXISTS idx_age ON persons(age);
+CREATE INDEX IF NOT EXISTS idx_gender ON persons(gender);
+CREATE INDEX IF NOT EXISTS idx_country_id ON persons(country_id);
