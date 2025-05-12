@@ -83,7 +83,7 @@ $ curl -i -X GET http://localhost:8080/persons/1
     - JSON-объект в теле запроса с параметрами:
         - name - имя персоны
         - surname - фамилия персоны
-        - patronymic - отчество персоны (необязательно)
+        - patronymic - отчество персоны
         - age - возраст
         - gender - пол
         - country_id - код страны (национальность)
@@ -91,6 +91,36 @@ $ curl -i -X GET http://localhost:8080/persons/1
 ##### Пример
 ```bash
 $ curl -i -X PUT http://localhost:8080/persons/1 \
+-H "Content-Type: application/json" \
+-d '{
+	"name": "Ivan",
+	"surname": "Ivanov",
+	"patronymic": "Ivanovich",
+	"age": 22,
+	"gender": "male",
+	"country_id": "RU"
+}'
+
+{
+  "status": "OK"
+}
+```
+
+#### Обновление отдельных полей персоны
+ - Эндпоинт – PATCH /persons/{id}
+ - Параметры запроса:
+    - id – ID персоны, указан в пути запроса
+    - JSON-объект в теле запроса с параметрами:
+        - name - имя персоны (необязательно)
+        - surname - фамилия персоны (необязательно)
+        - patronymic - отчество персоны (необязательно)
+        - age - возраст (необязательно)
+        - gender - пол (необязательно)
+        - country_id - код страны (национальность, необязательно)
+
+##### Пример
+```bash
+$ curl -i -X PATCH http://localhost:8080/persons/1 \
 -H "Content-Type: application/json" \
 -d '{
 	"name": "Ivan",
@@ -166,3 +196,8 @@ $ curl -i -X GET 'http://localhost:8080/persons?limit=10&offset=0&age_from=18&ag
 $ make run
 ...............
 ```
+
+### Полезные ссылки
+- [Пример 1](https://github.com/fprofit/EffectiveMobile)
+- [Пример 2](https://github.com/kozyrev-m/effective-mobile-task)
+- [Пример 3](https://github.com/alukart32/effective-mobile-test-task)

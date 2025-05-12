@@ -120,6 +120,6 @@ func New(creator PersonCreator) http.HandlerFunc {
 			return
 		}
 
-		slog.Info("Create new person")
+		slog.Info("Create new person", slog.Int64("id", id))
 	}
 }

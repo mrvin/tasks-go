@@ -180,7 +180,7 @@
                 }
             },
             "put": {
-                "description": "Update person information",
+                "description": "Update all person information",
                 "consumes": [
                     "application/json"
                 ],
@@ -205,7 +205,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/update.RequestUpdate"
+                            "$ref": "#/definitions/updatefull.RequestUpdateFull"
                         }
                     }
                 ],
@@ -246,6 +246,57 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestOK"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.RequestError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update some fields person information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "persons"
+                ],
+                "summary": "Update person",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "person id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "person data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/update.RequestUpdate"
+                        }
                     }
                 ],
                 "responses": {
@@ -373,6 +424,29 @@
             }
         },
         "update.RequestUpdate": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "country_id": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "updatefull.RequestUpdateFull": {
             "type": "object",
             "properties": {
                 "age": {

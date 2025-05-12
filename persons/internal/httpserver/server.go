@@ -15,6 +15,7 @@ import (
 	getperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/get"
 	listpersons "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/list"
 	updateperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/update"
+	updatefullperson "github.com/mrvin/tasks-go/persons/internal/httpserver/handlers/person/updatefull"
 	"github.com/mrvin/tasks-go/persons/internal/storage"
 	"github.com/mrvin/tasks-go/persons/pkg/http/logger"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -42,7 +43,8 @@ func New(conf *Conf, st storage.PersonStorage) *Server {
 
 	mux.HandleFunc(http.MethodPost+" /persons", createperson.New(st))
 	mux.HandleFunc(http.MethodGet+" /persons/{id}", getperson.New(st))
-	mux.HandleFunc(http.MethodPut+" /persons/{id}", updateperson.New(st))
+	mux.HandleFunc(http.MethodPut+" /persons/{id}", updatefullperson.New(st))
+	mux.HandleFunc(http.MethodPatch+" /persons/{id}", updateperson.New(st))
 	mux.HandleFunc(http.MethodDelete+" /persons/{id}", deleteperson.New(st))
 
 	mux.HandleFunc(http.MethodGet+" /persons", listpersons.New(st))

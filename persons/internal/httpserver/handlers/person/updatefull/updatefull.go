@@ -1,4 +1,4 @@
-package update
+package updatefull
 
 import (
 	"context"
@@ -14,33 +14,33 @@ import (
 	httpresponse "github.com/mrvin/tasks-go/persons/pkg/http/response"
 )
 
-type PersonUpdater interface {
-	Update(ctx context.Context, id int64, person *storage.Person) error
+type PersonUpdaterFull interface {
+	UpdateFull(ctx context.Context, id int64, person *storage.Person) error
 }
 
-type RequestUpdate struct {
-	Name       string `json:"name,omitempty"`
-	Surname    string `json:"surname,omitempty"`
+type RequestUpdateFull struct {
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
 	Patronymic string `json:"patronymic,omitempty"`
-	Age        int    `json:"age,omitempty"`
-	Gender     string `json:"gender,omitempty"`
-	CountryID  string `json:"country_id,omitempty"` //nolint:tagliatelle
+	Age        int    `json:"age"`
+	Gender     string `json:"gender"`
+	CountryID  string `json:"country_id"` //nolint:tagliatelle
 }
 
 // New сreates a person updation handler.
 //
 //	@Summary			Update person
-//	@Description		Update some fields person information
+//	@Description		Update all person information
 //	@Tags			persons
 //	@Accept			json
 //	@Produce			json
 //	@Param			id path int64 true "person id"
-//	@Param			input body RequestUpdate true "person data"
+//	@Param			input body RequestUpdateFull true "person data"
 //	@Success			200  {object} response.RequestOK
 //	@Failure			400  {object}  response.RequestError
 //	@Failure			500  {object}  response.RequestError
-//	@Router			/persons/{id} [patch]
-func New(updater PersonUpdater) http.HandlerFunc {
+//	@Router			/persons/{id} [put]
+func New(updater PersonUpdaterFull) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		idStr := req.PathValue("id")
 		if idStr == "" {
@@ -58,7 +58,7 @@ func New(updater PersonUpdater) http.HandlerFunc {
 		}
 
 		// Read json request
-		var request RequestUpdate
+		var request RequestUpdateFull
 		body, err := io.ReadAll(req.Body)
 		defer req.Body.Close()
 		if err != nil {
@@ -83,7 +83,7 @@ func New(updater PersonUpdater) http.HandlerFunc {
 			Gender:     request.Gender,
 			CountryID:  request.CountryID,
 		}
-		if err := updater.Update(req.Context(), id, &person); err != nil {
+		if err := updater.UpdateFull(req.Context(), id, &person); err != nil {
 			err := fmt.Errorf("update person: %w", err)
 			slog.Error(err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
@@ -93,6 +93,6 @@ func New(updater PersonUpdater) http.HandlerFunc {
 		// Write json response
 		httpresponse.WriteOK(res, http.StatusOK)
 
-		slog.Info("Update person", slog.Int64("id", id))
+		slog.Info("Update full person", slog.Int64("id", id))
 	}
 }

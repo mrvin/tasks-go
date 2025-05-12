@@ -84,6 +84,21 @@ definitions:
       surname:
         type: string
     type: object
+  updatefull.RequestUpdateFull:
+    properties:
+      age:
+        type: integer
+      country_id:
+        type: string
+      gender:
+        type: string
+      name:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -229,10 +244,10 @@ paths:
       summary: Get person
       tags:
       - persons
-    put:
+    patch:
       consumes:
       - application/json
-      description: Update person information
+      description: Update some fields person information
       parameters:
       - description: person id
         in: path
@@ -245,6 +260,40 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/update.RequestUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.RequestOK'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.RequestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.RequestError'
+      summary: Update person
+      tags:
+      - persons
+    put:
+      consumes:
+      - application/json
+      description: Update all person information
+      parameters:
+      - description: person id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: person data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/updatefull.RequestUpdateFull'
       produces:
       - application/json
       responses:
