@@ -42,33 +42,44 @@ type ResponseCreate struct {
 //	@Router			/persons [post]
 func New(creator PersonCreator) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
+		op := "Create schedule: "
+
 		// Read json request
 		var request RequestCreate
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
 			err := fmt.Errorf("read body request: %w", err)
-			slog.Error(err.Error())
+			slog.Error(op + err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
 		if err := json.Unmarshal(body, &request); err != nil {
 			err := fmt.Errorf("unmarshal body request: %w", err)
-			slog.Error(err.Error())
+			slog.Error(op + err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		age, err := enrich.GetAge(request.Name)
 		if err != nil {
-			slog.Warn("get age: " + err.Error())
+			err := fmt.Errorf("get age: %w", err)
+			slog.Error(op + err.Error())
+			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		gender, err := enrich.GetGender(request.Name)
 		if err != nil {
-			slog.Warn("get gender: " + err.Error())
+			err := fmt.Errorf("get gender: %w", err)
+			slog.Error(op + err.Error())
+			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		countryID, err := enrich.GetCountryID(request.Name)
 		if err != nil {
-			slog.Warn("get country ID: " + err.Error())
+			err := fmt.Errorf("get country ID: %w", err)
+			slog.Error(op + err.Error())
+			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		//nolint: exhaustruct
@@ -82,8 +93,8 @@ func New(creator PersonCreator) http.HandlerFunc {
 		}
 		id, err := creator.Create(req.Context(), &person)
 		if err != nil {
-			err := fmt.Errorf("create person: %w", err)
-			slog.Error(err.Error())
+			err := fmt.Errorf("save person: %w", err)
+			slog.Error(op + err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -96,7 +107,7 @@ func New(creator PersonCreator) http.HandlerFunc {
 		jsonResponse, err := json.Marshal(&response)
 		if err != nil {
 			err := fmt.Errorf("marshal response: %w", err)
-			slog.Error(err.Error())
+			slog.Error(op + err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -104,11 +115,11 @@ func New(creator PersonCreator) http.HandlerFunc {
 		res.WriteHeader(http.StatusCreated)
 		if _, err := res.Write(jsonResponse); err != nil {
 			err := fmt.Errorf("write response: %w", err)
-			slog.Error(err.Error())
+			slog.Error(op + err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		slog.Info("New person created successfully")
+		slog.Info("Create new person")
 	}
 }
