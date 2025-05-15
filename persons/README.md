@@ -189,12 +189,84 @@ $ curl -i -X GET 'http://localhost:8080/persons?limit=10&offset=0&age_from=18&ag
 ```
 #### Документация OpenAPI
  - Эндпоинт – GET /swagger/index.html
+![swagger](./docs/swagger.png)
 
 ### Сборка и запуск приложения в Docker Compose
 
 ```shell script
 $ make run
 ...............
+```
+
+## Структура проекта
+```bash
+$ tree .
+.
+├── cmd
+│   └── persons-server
+│       ├── Dockerfile
+│       ├── main.go
+│       └── Makefile
+├── configs
+│   ├── persons.env
+│   └── postgres.env
+├── deployments
+│   └── docker-compose.yaml
+├── docs
+│   ├── docs.go
+│   ├── swagger.json
+│   ├── swagger.png
+│   └── swagger.yaml
+├── go.mod
+├── go.sum
+├── internal
+│   ├── config
+│   │   └── config.go
+│   ├── enrich
+│   │   └── enrich.go
+│   ├── httpserver
+│   │   ├── handlers
+│   │   │   ├── health
+│   │   │   │   └── health.go
+│   │   │   └── person
+│   │   │       ├── create
+│   │   │       │   └── create.go
+│   │   │       ├── deletep
+│   │   │       │   └── delete.go
+│   │   │       ├── get
+│   │   │       │   └── get.go
+│   │   │       ├── list
+│   │   │       │   └── list.go
+│   │   │       ├── update
+│   │   │       │   └── update.go
+│   │   │       └── updatefull
+│   │   │           └── updatefull.go
+│   │   └── server.go
+│   ├── logger
+│   │   └── logger.go
+│   └── storage
+│       ├── sql
+│       │   ├── create.go
+│       │   ├── delete.go
+│       │   ├── get.go
+│       │   ├── list.go
+│       │   ├── storage.go
+│       │   ├── updatefull.go
+│       │   └── update.go
+│       └── storage.go
+├── Makefile
+├── migrations
+│   ├── 000001_init_schema.down.sql
+│   └── 000001_init_schema.up.sql
+├── pkg
+│   ├── http
+│   │   ├── logger
+│   │   │   └── logger.go
+│   │   └── response
+│   │       └── response.go
+│   └── retry
+│       └── retry.go
+└── README.md
 ```
 
 ### Полезные ссылки
