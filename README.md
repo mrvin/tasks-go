@@ -13,7 +13,7 @@
 11. [imgstorage](./imgstorage) - сервис "хранилище изображений", API: gRPC(streaming);
 12. [url-shortener](./url-shortener) - сервис "сокращатель URL-адресов", Basic Auth, PostgreSQL, API: HTTP/REST;
 13. [e-wallet](./e-wallet) - сервис "электронный кошелек", API: HTTP/REST, транзакции sql, PostgreSQL, Docker Compose;
-14. [persons](./persons) - сервис "записная книга", API: HTTP/REST, PostgreSQL, Docker Compose;
+14. [persons](./persons) - сервис "записная книга", API: HTTP/REST, PostgreSQL(pgx, squirrel), Docker Compose, OpenApi документация;
 15. [books](./books) - сервис "книги", API: gRPC, MySQL(JOIN), Docker Compose;
 16. [photo-gallery](./photo-gallery) - сервис "фотогалерея", API: HTTP/REST, SQLite;
 17. [notes](./notes) - сервис "заметки", API: HTTP/REST, PostgreSQL, Basic Auth, Docker Compose;
