@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const epsilon = 1
+
 func (c *Client) refreshToken() {
 	userAuth, err := c.getToken(context.TODO(), "", "", "")
 	if err != nil {
@@ -18,7 +20,7 @@ func (c *Client) refreshToken() {
 
 	c.mutexUserAuth.RLock()
 	fmt.Println(c.userAuth)
-	time.AfterFunc(c.userAuth.expiresIn, c.refreshToken)
+	time.AfterFunc(c.userAuth.expiresIn+epsilon, c.refreshToken)
 	slog.Info("Refresh token will start", slog.String("duration", c.userAuth.expiresIn.String()))
 	c.mutexUserAuth.RUnlock()
 }
