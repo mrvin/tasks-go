@@ -1,0 +1,65 @@
+services:
+    goods:
+        build:
+         context: ../
+         dockerfile: cmd/goods-server/Dockerfile
+        ports:
+         - "8080:8080" # REST API
+        env_file:
+         - ../configs/config.env
+        depends_on:
+         - migrate-postgres
+         - migrate-clickhouse
+
+    migrate-postgres:
+        image: migrate/migrate:v4.18.3
+        command: ["-path", "/migrations/postgres", "-database",  "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable", "up"]
+        depends_on:
+          postgres:
+            condition: service_healthy
+        volumes:
+         - ./../migrations:/migrations
+
+    # Create service with PostgreSQL.
+    postgres:
+        image: postgres:17.4-alpine3.21
+        ports:
+         - "5432"
+        user: root
+        env_file:
+         - ../configs/config.env
+        healthcheck:
+          test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+          interval: 3s
+        volumes:
+         - ${HOME}/volumes_docker/goods/postgres-data:/var/lib/postgresql/data
+
+    migrate-clickhouse:
+        image: migrate/migrate:v4.18.3
+        command: ["-path", "/migrations/clickhouse", "-database",  "clickhouse://${CLICKHOUSE_HOST}:${CLICKHOUSE_PORT}?username=${CLICKHOUSE_USER}&password=${CLICKHOUSE_PASSWORD}&database=${CLICKHOUSE_DB}", "up"]
+        depends_on:
+          clickhouse:
+            condition: service_healthy
+        volumes:
+         - ./../migrations:/migrations
+
+    # Create service with ClickHouse.
+    clickhouse:
+        image: clickhouse/clickhouse-server:24.3-alpine
+        ports:
+         - "9000:9000"
+         - "8123:8123"
+        env_file:
+         - ../configs/config.env
+        healthcheck:
+         test: wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1
+         interval: 3s
+        volumes:
+         - ${HOME}/volumes_docker/goods/clickhouse-data:/var/lib/clickhouse
+ 
+    # Create service with NATS.
+    nats:
+        image: nats:2.11.4-alpine3.22
+        ports:
+         - "4222:4222" # Client port
+         - "8222:8222" # Monitoring port (HTTP)
