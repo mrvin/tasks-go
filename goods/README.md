@@ -49,15 +49,15 @@ $ curl -i -X POST 'http://localhost:8080/good/create?projectID=1' \
 $ curl -i -X PATCH 'http://localhost:8080/good/update?id=1&projectID=1' \
 -H "Content-Type: application/json" \
 -d '{
-	"name": "Sample Product 2",
-	"description": "Description 2"
+	"name": "New name",
+	"description": "New description"
 }'
 
 {
   "id": 1,
   "projectID": 1,
-  "name": "Sample Product 2",
-  "description": "Description 2",
+  "name": "New name",
+  "description": "New description",
   "priority": 1,
   "removed": true,
   "createdAt": "2025-06-25T14:05:21.68716Z"
@@ -206,4 +206,42 @@ $ tree .
 │   └── retry
 │       └── retry.go
 └── README.md
-'''
+```
+
+### Написать SQL-запросы для ClickHouse:
+#### Выборки всех уникальных Description у которых более 2 событий
+```sql
+SELECT Description,
+    count() AS descriptions_count
+FROM goods_events
+GROUP BY Description
+HAVING count() > 2;
+```
+
+#### Выборки ProjectID которые совершили более 2 различных Description
+```sql
+SELECT ProjectID,
+	uniqExact(Description) AS unique_descriptions_count
+FROM goods_events
+GROUP BY ProjectID
+HAVING unique_descriptions_count > 2
+ORDER BY ProjectID;
+```
+
+#### Выборки событий которые произошли в первый день каждого месяца
+```sql
+SELECT *
+FROM goods_events
+WHERE toDayOfMonth(EventTime) = 1
+ORDER BY EventTime DESC;
+```
+
+#### Вывод событий по заданному Description и временному диапазону
+```sql
+SELECT *
+FROM goods_events
+WHERE 
+    Description = 'Create new good'
+    AND EventTime BETWEEN '2025-06-26 10:30:00' AND '2025-06-26 22:30:00'
+ORDER BY EventTime DESC;
+```
