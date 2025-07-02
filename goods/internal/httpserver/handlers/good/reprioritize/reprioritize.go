@@ -72,10 +72,23 @@ func New(reprioritizer GoodReprioritizer, mq *natsmq.Queue) http.HandlerFunc {
 			return
 		}
 
+		event := storage.Event{
+			ID:          good.ID,
+			ProjectID:   good.ProjectID,
+			Name:        good.Name,
+			Description: "Reprioritize good",
+			Priority:    good.Priority,
+			Removed:     good.Removed,
+			Time:        time.Now(),
+		}
+		if err := mq.SendEvent(&event); err != nil {
+			slog.Warn(op + "send event: " + err.Error())
+		}
+
+		// Write json response
 		response := Response{
 			Priorities: priorities,
 		}
-		// Write json response
 		jsonResponse, err := json.Marshal(&response)
 		if err != nil {
 			err := fmt.Errorf("marshal response: %w", err)
@@ -87,22 +100,6 @@ func New(reprioritizer GoodReprioritizer, mq *natsmq.Queue) http.HandlerFunc {
 		res.WriteHeader(http.StatusOK)
 		if _, err := res.Write(jsonResponse); err != nil {
 			err := fmt.Errorf("write response: %w", err)
-			slog.Error(op + err.Error())
-			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		event := storage.Event{
-			ID:          good.ID,
-			ProjectID:   good.ProjectID,
-			Name:        good.Name,
-			Description: "Reprioritize good",
-			Priority:    good.Priority,
-			Removed:     good.Removed,
-			Time:        time.Now(),
-		}
-		if err := mq.SendEvent(&event); err != nil {
-			err := fmt.Errorf("send event: %w", err)
 			slog.Error(op + err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return

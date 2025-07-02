@@ -55,6 +55,19 @@ func New(creator GoodCreator, mq *natsmq.Queue) http.HandlerFunc {
 			return
 		}
 
+		event := storage.Event{
+			ID:          good.ID,
+			ProjectID:   good.ProjectID,
+			Name:        good.Name,
+			Description: "Create new good",
+			Priority:    good.Priority,
+			Removed:     good.Removed,
+			Time:        good.CreatedAt,
+		}
+		if err := mq.SendEvent(&event); err != nil {
+			slog.Warn(op + "send event: " + err.Error())
+		}
+
 		// Write json response
 		jsonResponse, err := json.Marshal(&good)
 		if err != nil {
@@ -67,22 +80,6 @@ func New(creator GoodCreator, mq *natsmq.Queue) http.HandlerFunc {
 		res.WriteHeader(http.StatusCreated)
 		if _, err := res.Write(jsonResponse); err != nil {
 			err := fmt.Errorf("write response: %w", err)
-			slog.Error(op + err.Error())
-			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		event := storage.Event{
-			ID:          good.ID,
-			ProjectID:   good.ProjectID,
-			Name:        good.Name,
-			Description: "Create new good",
-			Priority:    good.Priority,
-			Removed:     good.Removed,
-			Time:        good.CreatedAt,
-		}
-		if err := mq.SendEvent(&event); err != nil {
-			err := fmt.Errorf("send event: %w", err)
 			slog.Error(op + err.Error())
 			httpresponse.WriteError(res, err.Error(), http.StatusInternalServerError)
 			return

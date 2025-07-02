@@ -22,15 +22,15 @@ type GoodLister interface {
 	Meta(ctx context.Context) (int64, int64, error)
 }
 
-type ResponseMeta struct {
+type Meta struct {
 	Total   int64  `json:"total"`
 	Removed int64  `json:"removed"`
 	Limit   uint64 `json:"limit"`
 	Offset  uint64 `json:"offset"`
 }
 
-type ResponseGoods struct {
-	Meta   ResponseMeta   `json:"meta"`
+type Response struct {
+	Meta   Meta           `json:"meta"`
 	Goods  []storage.Good `json:"goods"`
 	Status string         `json:"status"`
 }
@@ -79,13 +79,13 @@ func New(lister GoodLister) http.HandlerFunc {
 		}
 
 		// Write json response
-		meta := ResponseMeta{
+		meta := Meta{
 			Total:   total,
 			Removed: removed,
 			Limit:   limit,
 			Offset:  offset,
 		}
-		response := ResponseGoods{
+		response := Response{
 			Meta:   meta,
 			Goods:  goods,
 			Status: "OK",
