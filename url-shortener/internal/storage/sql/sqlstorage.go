@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/lib/pq"
@@ -32,9 +31,10 @@ type Storage struct {
 	insertUser *sql.Stmt
 	selectUser *sql.Stmt
 
-	insertURL *sql.Stmt
-	selectURL *sql.Stmt
-	deleteURL *sql.Stmt
+	insertURL    *sql.Stmt
+	selectURLOld *sql.Stmt
+	selectURL    *sql.Stmt
+	deleteURL    *sql.Stmt
 
 	selectCountURL *sql.Stmt
 }
@@ -52,6 +52,105 @@ func New(ctx context.Context, conf *Conf) (*Storage, error) {
 	}
 
 	return &st, nil
+}
+
+func (s *Storage) CreateUser(ctx context.Context, user *storage.User) error {
+	if _, err := s.insertUser.ExecContext(ctx, user.Name, user.HashPassword, user.Role); err != nil {
+		var pgErr *pq.Error
+		if errors.As(err, &pgErr) {
+			if pgErr.Code.Name() == "unique_violation" {
+				return storage.ErrUserExists
+			}
+		}
+
+		return fmt.Errorf("insert user: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Storage) GetUser(ctx context.Context, name string) (*storage.User, error) {
+	var user storage.User
+
+	if err := s.selectUser.QueryRowContext(ctx, name).Scan(&user.HashPassword, &user.Role); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, storage.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("can't scan user with name: %s: %w", name, err)
+	}
+	user.Name = name
+
+	return &user, nil
+}
+
+func (s *Storage) CreateURL(ctx context.Context, userName, urlToSave, alias string) error {
+	if _, err := s.insertURL.ExecContext(ctx, urlToSave, alias, userName); err != nil {
+		var pgErr *pq.Error
+		if errors.As(err, &pgErr) {
+			if pgErr.Code.Name() == "unique_violation" {
+				return storage.ErrURLExists
+			}
+		}
+		return fmt.Errorf("insert url: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Storage) GetURL(ctx context.Context, alias string) (string, error) {
+	var url string
+
+	if err := s.selectURL.QueryRowContext(ctx, alias).Scan(&url); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", storage.ErrURLNotFound
+		}
+		return "", fmt.Errorf("can't scan URL with alias: %s: %w", alias, err)
+	}
+
+	return url, nil
+}
+
+func (s *Storage) DeleteURL(ctx context.Context, userName, alias string) error {
+	res, err := s.deleteURL.ExecContext(ctx, userName, alias)
+	if err != nil {
+		return fmt.Errorf("delete url: %w", err)
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("delete url: %w", err)
+	}
+	if count != 1 {
+		return storage.ErrURLAliasIsNotExists
+	}
+
+	return nil
+}
+
+func (s *Storage) GetCountURL(ctx context.Context, userName, alias string) (int64, error) {
+	var count int64
+
+	if err := s.selectCountURL.QueryRowContext(ctx, userName, alias).Scan(&count); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, storage.ErrURLNotFound
+		}
+		return 0, fmt.Errorf("can't scan count for alias: %w", err)
+	}
+
+	return count, nil
+}
+
+func (s *Storage) Close() error {
+	s.insertUser.Close()
+	s.selectUser.Close()
+
+	s.insertURL.Close()
+	s.selectURLOld.Close()
+	s.selectURL.Close()
+	s.deleteURL.Close()
+
+	s.selectCountURL.Close()
+
+	return s.db.Close() //nolint:wrapcheck
 }
 
 func (s *Storage) connect(ctx context.Context) error {
@@ -109,6 +208,17 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf(fmtStrErr, "insert url", err)
 	}
+	const sqlSelectURLOld = `
+		UPDATE 
+			url
+		SET count = count+1 
+		WHERE alias = $1
+		RETURNING url`
+
+	s.selectURLOld, err = s.db.PrepareContext(ctx, sqlSelectURLOld)
+	if err != nil {
+		return fmt.Errorf(fmtStrErr, "select url", err)
+	}
 	const sqlSelectURL = "SELECT get_url($1)"
 	s.selectURL, err = s.db.PrepareContext(ctx, sqlSelectURL)
 	if err != nil {
@@ -132,150 +242,4 @@ func (s *Storage) prepareQuery(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (s *Storage) CreateUser(ctx context.Context, user *storage.User) error {
-	if _, err := s.insertUser.ExecContext(ctx, user.Name, user.HashPassword, user.Role); err != nil {
-		var pgErr *pq.Error
-		if errors.As(err, &pgErr) {
-			if pgErr.Code.Name() == "unique_violation" {
-				return storage.ErrUserExists
-			}
-		}
-
-		return fmt.Errorf("insert user: %w", err)
-	}
-
-	return nil
-}
-
-func (s *Storage) GetUser(ctx context.Context, name string) (*storage.User, error) {
-	var user storage.User
-
-	if err := s.selectUser.QueryRowContext(ctx, name).Scan(&user.HashPassword, &user.Role); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, storage.ErrUserNotFound
-		}
-		return nil, fmt.Errorf("can't scan user with name: %s: %w", name, err)
-	}
-	user.Name = name
-
-	return &user, nil
-}
-
-func (s *Storage) CreateURL(ctx context.Context, userName, urlToSave, alias string) error {
-	if _, err := s.insertURL.ExecContext(ctx, urlToSave, alias, userName); err != nil {
-		var pgErr *pq.Error
-		if errors.As(err, &pgErr) {
-			if pgErr.Code.Name() == "unique_violation" {
-				return storage.ErrURLExists
-			}
-		}
-		return fmt.Errorf("insert url: %w", err)
-	}
-
-	return nil
-}
-
-func (s *Storage) GetURLOld(ctx context.Context, alias string) (string, error) {
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted, ReadOnly: false})
-	if err != nil {
-		return "", fmt.Errorf("start transaction: %w", err)
-	}
-	defer func() {
-		if err := tx.Rollback(); err != nil {
-			if !errors.Is(err, sql.ErrTxDone) {
-				slog.Error("Failed Rollback" + err.Error())
-			}
-		}
-	}()
-
-	var url string
-	const sqlSelectURL = `
-		SELECT url
-		FROM url
-		WHERE alias = $1`
-	if err = tx.QueryRowContext(
-		ctx,
-		sqlSelectURL,
-		alias,
-	).Scan(&url); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return "", storage.ErrURLNotFound
-		}
-		return "", fmt.Errorf("can't scan URL with alias: %s: %w", alias, err)
-	}
-
-	const sqlUpdateCount = `
-		UPDATE url
-		SET count = count+1
-		WHERE alias = $1`
-	_, err = tx.ExecContext(ctx,
-		sqlUpdateCount,
-		alias,
-	)
-	if err != nil {
-		return "", fmt.Errorf("can't update count: %w", err)
-	}
-
-	if err = tx.Commit(); err != nil {
-		return "", fmt.Errorf("commit transaction: %w", err)
-	}
-
-	return url, nil
-}
-
-func (s *Storage) GetURL(ctx context.Context, alias string) (string, error) {
-	var url string
-
-	if err := s.selectURL.QueryRowContext(ctx, alias).Scan(&url); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return "", storage.ErrURLNotFound
-		}
-		return "", fmt.Errorf("can't scan URL with alias: %s: %w", alias, err)
-	}
-
-	return url, nil
-}
-
-func (s *Storage) DeleteURL(ctx context.Context, userName, alias string) error {
-	res, err := s.deleteURL.ExecContext(ctx, userName, alias)
-	if err != nil {
-		return fmt.Errorf("delete url: %w", err)
-	}
-	count, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("delete url: %w", err)
-	}
-	if count != 1 {
-		return storage.ErrURLAliasIsNotExists
-	}
-
-	return nil
-}
-
-func (s *Storage) GetCountURL(ctx context.Context, userName, alias string) (uint64, error) {
-	var count uint64
-
-	if err := s.selectCountURL.QueryRowContext(ctx, userName, alias).Scan(&count); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return 0, storage.ErrURLNotFound
-		}
-		return 0, fmt.Errorf("can't scan count for alias: %w", err)
-	}
-
-	return count, nil
-}
-
-func (s *Storage) Close() error {
-	s.insertUser.Close()
-	s.selectUser.Close()
-
-	s.insertURL.Close()
-	s.selectURL.Close()
-	s.deleteURL.Close()
-
-	s.selectCountURL.Close()
-
-	return s.db.Close() //nolint:wrapcheck
 }

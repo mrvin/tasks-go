@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"errors"
 	stdlog "log"
 	"log/slog"
-	"net/http"
 
 	"github.com/mrvin/tasks-go/url-shortener/internal/config"
 	"github.com/mrvin/tasks-go/url-shortener/internal/httpserver"
@@ -39,14 +37,16 @@ func main() {
 		return
 	}
 	slog.Info("Connected to database")
+	defer func() {
+		if err := st.Close(); err != nil {
+			slog.Error("Failed to close storage: " + err.Error())
+		} else {
+			slog.Info("Closing the database connection")
+		}
+	}()
 
 	// Start server
 	server := httpserver.New(&conf.HTTP, conf.DefaultAliasLength, st)
 
-	if err := server.Start(); err != nil {
-		if !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("Failed to start http server: " + err.Error())
-			return
-		}
-	}
+	server.Run(ctx)
 }

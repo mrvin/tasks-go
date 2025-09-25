@@ -2,9 +2,12 @@ package httpserver
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/mrvin/tasks-go/url-shortener/internal/httpserver/handlers"
@@ -33,6 +36,8 @@ type Conf struct {
 
 type Server struct {
 	http.Server
+
+	conf *Conf
 }
 
 func New(conf *Conf, defaultAliasLengthint int, st storage.Storage) *Server {
@@ -51,7 +56,7 @@ func New(conf *Conf, defaultAliasLengthint int, st storage.Storage) *Server {
 	loggerServer := logger.Logger{Inner: mux}
 
 	return &Server{
-		//nolint:exhaustivestruct,exhaustruct
+		//nolint:exhaustruct
 		http.Server{
 			Addr:         conf.Addr,
 			Handler:      &loggerServer,
@@ -59,32 +64,47 @@ func New(conf *Conf, defaultAliasLengthint int, st storage.Storage) *Server {
 			WriteTimeout: writeTimeout * time.Second,
 			IdleTimeout:  idleTimeout * time.Minute,
 		},
+		conf,
 	}
 }
 
-func (s *Server) Start() error {
-	slog.Info("Start http server: http://" + s.Addr)
-	if err := s.ListenAndServe(); err != nil {
-		return fmt.Errorf("start http server: %w", err)
-	}
-	return nil
-}
+func (s *Server) Run(ctx context.Context) {
+	ctx, cancel := signal.NotifyContext(
+		ctx,
+		os.Interrupt,    // SIGINT, (Control-C)
+		syscall.SIGTERM, // systemd
+		syscall.SIGQUIT,
+	)
+	defer cancel()
 
-func (s *Server) StartTLS(conf *ConfHTTPS) error {
-	slog.Info("Start http server: https://" + s.Addr)
-	if err := s.ListenAndServeTLS(conf.CertFile, conf.KeyFile); err != nil {
-		return fmt.Errorf("start http server: %w", err)
+	go func() {
+		if s.conf.IsHTTPS {
+			if err := s.ListenAndServeTLS(s.conf.HTTPS.CertFile, s.conf.HTTPS.KeyFile); !errors.Is(err, http.ErrServerClosed) {
+				slog.Error("Failed to start https server: " + err.Error())
+				defer cancel()
+				return
+			}
+		} else {
+			if err := s.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+				slog.Error("Failed to start http server: " + err.Error())
+				defer cancel()
+				return
+			}
+		}
+	}()
+	if s.conf.IsHTTPS {
+		slog.Info("Start http server: https://" + s.Addr)
+	} else {
+		slog.Info("Start http server: http://" + s.Addr)
 	}
-	return nil
-}
 
-func (s *Server) Stop(ctx context.Context) error {
-	slog.Info("Stop http server")
+	<-ctx.Done()
+
 	if err := s.Shutdown(ctx); err != nil {
-		return fmt.Errorf("stop http server: %w", err)
+		slog.Error("Failed to stop http server: " + err.Error())
+		return
 	}
-
-	return nil
+	slog.Info("Stop http server")
 }
 
 type UserGetter interface {

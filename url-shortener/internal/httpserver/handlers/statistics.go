@@ -12,11 +12,11 @@ import (
 )
 
 type CountGetter interface {
-	GetCountURL(ctx context.Context, userName, alias string) (uint64, error)
+	GetCountURL(ctx context.Context, userName, alias string) (int64, error)
 }
 
 type ResponseGetCount struct {
-	Count  uint64 `json:"count"`
+	Count  int64  `json:"count"`
 	Status string `json:"status"`
 }
 
@@ -64,7 +64,7 @@ func NewGetCount(getter CountGetter) http.HandlerFunc {
 		}
 
 		slog.InfoContext(req.Context(), "Get count",
-			slog.Uint64("count", count),
+			slog.Int64("count", count),
 			slog.String("alias", alias),
 		)
 	}

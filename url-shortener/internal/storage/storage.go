@@ -30,7 +30,7 @@ type URLStorage interface {
 	CreateURL(ctx context.Context, userName, urlToSave, alias string) error
 	GetURL(ctx context.Context, alias string) (string, error)
 	DeleteURL(ctx context.Context, userName, alias string) error
-	GetCountURL(ctx context.Context, userName, alias string) (uint64, error)
+	GetCountURL(ctx context.Context, userName, alias string) (int64, error)
 }
 
 type Storage interface {

@@ -11,6 +11,7 @@ import (
 
 type LoggingResponseWriter struct {
 	http.ResponseWriter
+
 	statusCode    int
 	totalWritByte int
 }
