@@ -10,15 +10,14 @@
 8. [pinger](./pinger) - веб-приложение для мониторинга состояния контейнеров, API: HTTP/REST, PostgreSQL, Docker Compose;
 9. [calculator](./calculator) - сервис "арифметических операций" (сложения и вычитания), API: HTTP/REST;
 10. [fibonacci](./fibonacci) - сервис расчета чисел Фибоначчи, API: HTTP/REST, gRPC. Кэширование в Redis, Docker Compose;
-11. [imgstorage](./imgstorage) - сервис "хранилище изображений", API: gRPC(streaming);
-12. [url-shortener](./url-shortener) - сервис "сокращатель URL-адресов", Basic Auth, PostgreSQL, API: HTTP/REST;
-13. [e-wallet](./e-wallet) - сервис "электронный кошелек", API: HTTP/REST, транзакции sql, PostgreSQL, Docker Compose;
-14. [persons](./persons) - сервис "записная книга", API: HTTP/REST, PostgreSQL(pgx, squirrel), Docker Compose, OpenApi документация;
-15. [books](./books) - сервис "книги", API: gRPC, MySQL(JOIN), Docker Compose;
-16. [photo-gallery](./photo-gallery) - сервис "фотогалерея", API: HTTP/REST, SQLite;
-17. [notes](./notes) - сервис "заметки", API: HTTP/REST, PostgreSQL, Basic Auth, Docker Compose;
-18. [buildings](./buildings) - сервис для хранения информации о строениях, API: HTTP/REST(Gin), PostgreSQL(squirrel), Docker Compose, OpenApi документация;
-19. [merch-shop](./merch-shop) - сервис "магазин мерча", API: HTTP/REST, транзакции sql, PostgreSQL, JWT Auth, Docker Compose;
-20. [medication-scheduler](./medication-scheduler) - сервис для планирования приема лекарств, API: HTTP/REST, PostgreSQL(pgx), Docker Compose;
-21. [hh-client-go](./hh-client-go) - автоматическое обновление резюме на сайте [hh.ru](https://hh.ru/);
-22. [tg-bot-meme-gen](./tg-bot-meme-gen) - telegram чат-бот для генерации мемов.
+11. [imgstorage](./imgstorage) - сервис "хранилище изображений", API: gRPC(streaming
+12. [e-wallet](./e-wallet) - сервис "электронный кошелек", API: HTTP/REST, транзакции sql, PostgreSQL, Docker Compose;
+13. [persons](./persons) - сервис "записная книга", API: HTTP/REST, PostgreSQL(pgx, squirrel), Docker Compose, OpenApi документация;
+14. [books](./books) - сервис "книги", API: gRPC, MySQL(JOIN), Docker Compose;
+15. [photo-gallery](./photo-gallery) - сервис "фотогалерея", API: HTTP/REST, SQLite;
+16. [notes](./notes) - сервис "заметки", API: HTTP/REST, PostgreSQL, Basic Auth, Docker Compose;
+17. [buildings](./buildings) - сервис для хранения информации о строениях, API: HTTP/REST(Gin), PostgreSQL(squirrel), Docker Compose, OpenApi документация;
+18. [merch-shop](./merch-shop) - сервис "магазин мерча", API: HTTP/REST, транзакции sql, PostgreSQL, JWT Auth, Docker Compose;
+19. [medication-scheduler](./medication-scheduler) - сервис для планирования приема лекарств, API: HTTP/REST, PostgreSQL(pgx), Docker Compose;
+20. [hh-client-go](./hh-client-go) - автоматическое обновление резюме на сайте [hh.ru](https://hh.ru/);
+21. [tg-bot-meme-gen](./tg-bot-meme-gen) - telegram чат-бот для генерации мемов.
